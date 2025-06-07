@@ -8,9 +8,17 @@ public class Assslash : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
+			"HTTP", "Json", "JsonUtilities", "UMG"
+		});
 		
-		PublicIncludePaths.AddRange(new string[] { "EnhancedInput/Public" });
+		PublicIncludePaths.AddRange(new string[]
+		{
+			"EnhancedInput/Public",
+			"Slate", "SlateCore"
+		});
 		
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

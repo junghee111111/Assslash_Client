@@ -79,7 +79,7 @@ void AAssslashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	// bind actions
 	EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Move);
-	EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Jump);
+	// EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Jump);
 	EIC->BindAction(SwitchAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Switch);
 	UE_LOG(LogAssslash, Log, TEXT("PlayerPawn SetupPlayerInputComponent Done!"));
 }
