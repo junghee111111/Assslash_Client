@@ -9,6 +9,8 @@
 #include "Assslash/Assslash.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Assslash/UI/AssslashHUD.h"
+#include "Blueprint/UserWidget.h"
 #include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
@@ -20,14 +22,14 @@ AAssslashCharacter::AAssslashCharacter()
 	// Capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Collision"));
 	// SetRootComponent(Capsule);
 
-	Body = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Body"));
-	Body->SetupAttachment(RootComponent);
-
-	Hair = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hair"));
-	Hair->SetupAttachment(Body);
-
-	Clothes = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Clothes"));
-	Clothes->SetupAttachment(Body);
+	// Body = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Body"));
+	// Body->SetupAttachment(RootComponent);
+	//
+	// Hair = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hair"));
+	// Hair->SetupAttachment(Body);
+	//
+	// Clothes = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Clothes"));
+	// Clothes->SetupAttachment(Body);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
@@ -39,20 +41,47 @@ AAssslashCharacter::AAssslashCharacter()
 	// Movement = CreateDefaultSubobject<UCharacterMovementComponent>(TEXT("Movement"));
 	MoveScale = 1.f;
 
+	// HUD
+	PlayerHUDClass = nullptr;
+	PlayerHUD = nullptr;
+
+	
+	this->GetCapsuleComponent()->SetConstraintMode(EDOFMode::Type::YZPlane);
 }
 
 // Called when the game starts or when spawned
 void AAssslashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if (IsLocallyControlled() && PlayerHUDClass)
+	{
+		AAssslashPlayerController* APC = GetController<AAssslashPlayerController>();
+		check(APC);
+
+		PlayerHUD = CreateWidget<UAssslashHUD>(APC, PlayerHUDClass);
+		check(PlayerHUD);
+
+		PlayerHUD->AddToPlayerScreen();
+	}
 }
+
+void AAssslashCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (PlayerHUD)
+	{
+		PlayerHUD->RemoveFromParent();
+		PlayerHUD = nullptr;
+	}
+}
+
 
 // Called every frame
 void AAssslashCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	
 }
 
 
