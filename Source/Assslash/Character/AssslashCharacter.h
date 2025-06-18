@@ -31,12 +31,15 @@ public:
 	AAssslashCharacter();
 
 protected:
+	/**
+	 * inputs
+	 **/
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	void Move(const FInputActionValue& ActionValue);
 	void Jump(const FInputActionValue& ActionValue);
 	void Switch(const FInputActionValue& ActionValue);
-	
 
 public:	
 	// Called every frame
@@ -45,14 +48,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* Body;
-
-	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* Hair;
-
-	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* Clothes;
+	// UPROPERTY(EditAnywhere)
+	// class UStaticMeshComponent* Body;
+	//
+	// UPROPERTY(EditAnywhere)
+	// class UStaticMeshComponent* Hair;
+	//
+	// UPROPERTY(EditAnywhere)
+	// class UStaticMeshComponent* Clothes;
 
 	UPROPERTY(EditAnywhere)
 	class USpringArmComponent* SpringArm;
@@ -65,4 +68,14 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	float MoveScale;
+
+protected:
+	/**
+	 *HUD
+	 **/
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UAssslashHUD> PlayerHUDClass;
+
+	UPROPERTY()
+	class UAssslashHUD* PlayerHUD;
 };
