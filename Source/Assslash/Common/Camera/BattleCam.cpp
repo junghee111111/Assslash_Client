@@ -3,9 +3,11 @@
 
 #include "BattleCam.h"
 
+#include "Assslash/Assslash.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 // Sets default values
@@ -53,11 +55,20 @@ void ABattleCam::Tick(float DeltaTime)
 	if (ValidPlayerCount > 0)
 	{
 		FVector AvgLoc = SumLocation / ValidPlayerCount;
-		TargetLocation.X = AvgLoc.X;
-		TargetLocation.Y = AvgLoc.Y;
-		TargetLocation.Z = AvgLoc.Z;
+		TargetLocation.X = AvgLoc.X + CamXOffset;
+		TargetLocation.Y = AvgLoc.Y + CamYOffset;
+		TargetLocation.Z = AvgLoc.Z + CamZOffset;
 		
 		SetActorLocation(FMath::VInterpTo(GetActorLocation(), TargetLocation, DeltaTime, InterpSpeed));
+		SetActorRotation(FMath::RInterpTo(GetActorRotation(), CalculateLookRotation(AvgLoc) , DeltaTime, InterpSpeed));
 	}
+	
+	UE_LOG(LogAssslash, Log, TEXT("Look at %s"), *TargetLocation.ToString())
 }
+
+FRotator ABattleCam::CalculateLookRotation(FVector LookAtLoc)
+{
+	return UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), LookAtLoc);
+}
+
 
