@@ -36,6 +36,7 @@ AAssslashCharacter::AAssslashCharacter()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+	
 	// Camera->bUsePawnControlRotation = true;
 	
 	// Movement = CreateDefaultSubobject<UCharacterMovementComponent>(TEXT("Movement"));
@@ -80,7 +81,7 @@ void AAssslashCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void AAssslashCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	
 }
 
@@ -120,7 +121,7 @@ void AAssslashCharacter::Move(const struct FInputActionValue& InputValue)
 	
 	if (IsValid(Controller))
 	{
-		UE_LOG(LogAssslash, Log, TEXT("Move : %f %f"), InputVector.X, InputVector.Y);
+		// UE_LOG(LogAssslash, Log, TEXT("Move : %f %f"), InputVector.X, InputVector.Y);
 		// move right to side scroller  2d
 		const FVector RightDirection = GetActorRightVector();
 		

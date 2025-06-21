@@ -4,12 +4,16 @@
 #include "AssslashGameMode.h"
 
 #include "EngineUtils.h"
+#include "ToolBuilderUtil.h"
 #include "Assslash/Assslash.h"
+#include "Assslash/Character/AssslashCharacter.h"
+#include "Assslash/Character/AssslashPlayerController.h"
 #include "GameFramework/PlayerStart.h"
 
 AAssslashGameMode::AAssslashGameMode()
 {
-
+	PlayerControllerClass = AAssslashPlayerController::StaticClass();
+	DefaultPawnClass = AAssslashCharacter::StaticClass();
 }
 
 void AAssslashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -46,5 +50,6 @@ FString AAssslashGameMode::InitNewPlayer(APlayerController* NewPlayerController,
 
 	NewPlayerController->StartSpot = FreePlayerStarts.Pop();
 	UE_LOG(LogAssslash, Log, TEXT("New player '%s' start : %s"),*NewPlayerController->GetName(), *NewPlayerController->StartSpot->GetName())
+
 	return Super::InitNewPlayer(NewPlayerController, UniqueId, Options, Portal);
 }

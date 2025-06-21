@@ -13,7 +13,7 @@ UCLASS()
 class ASSSLASH_API AAssslashGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-
+	
 public:
 	AAssslashGameMode();
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage);
