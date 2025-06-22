@@ -21,7 +21,10 @@ protected:
 	class UInputAction* MoveAction;
 	
 	UPROPERTY(EditAnywhere, Category="Enhanced Input")
-	class UInputAction* JumpAction;
+	class UInputAction* AttackAction;
+
+	UPROPERTY(EditAnywhere, Category="Enhanced Input")
+	class UInputAction* DodgeAction;
 
 	UPROPERTY(EditAnywhere, Category="Enhanced Input")
 	class UInputAction* SwitchAction;
@@ -37,8 +40,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	/** Handle input to update location. */
 	void Move(const FInputActionValue& ActionValue);
-	void Jump(const FInputActionValue& ActionValue);
+
+	/** Handle input to start attacking. */
+	void Attack(const FInputActionValue& ActionValue);
+
+	/** Handle input to start dodging. */
+	void Dodge(const FInputActionValue& ActionValue);
+
+	/** Handle input to change between 2 characters. (like tekken tag) */
 	void Switch(const FInputActionValue& ActionValue);
 
 public:	
@@ -47,15 +59,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	// UPROPERTY(EditAnywhere)
-	// class UStaticMeshComponent* Body;
-	//
-	// UPROPERTY(EditAnywhere)
-	// class UStaticMeshComponent* Hair;
-	//
-	// UPROPERTY(EditAnywhere)
-	// class UStaticMeshComponent* Clothes;
 
 	UPROPERTY(EditAnywhere)
 	class USpringArmComponent* SpringArm;

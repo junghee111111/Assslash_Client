@@ -12,6 +12,7 @@
 #include "Assslash/UI/AssslashHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "UObject/ObjectRename.h"
 
 // Sets default values
 AAssslashCharacter::AAssslashCharacter()
@@ -109,8 +110,11 @@ void AAssslashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	// bind actions
 	EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Move);
-	// EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Jump);
 	EIC->BindAction(SwitchAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Switch);
+	EIC->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Attack);
+	EIC->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Dodge);
+	EIC->BindAction(SwitchAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Switch);
+	
 	UE_LOG(LogAssslash, Log, TEXT("PlayerPawn SetupPlayerInputComponent Done!"));
 }
 
@@ -127,6 +131,14 @@ void AAssslashCharacter::Move(const struct FInputActionValue& InputValue)
 		
 		AddMovementInput(RightDirection, InputVector.X);
 	}
+}
+
+void AAssslashCharacter::Attack(const FInputActionValue& ActionValue)
+{
+}
+
+void AAssslashCharacter::Dodge(const FInputActionValue& ActionValue)
+{
 }
 
 void AAssslashCharacter::Switch(const FInputActionValue& ActionValue)
