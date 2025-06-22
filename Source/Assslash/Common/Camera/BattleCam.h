@@ -40,6 +40,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	FRotator CalculateLookRotation(FVector TargetLocation);
+	void UpdateCamPositionAndRotation(FVector SumLoc, int32 ValidPlayerCount, int32 CamXAdjust, float DeltaTime);
 	
 };

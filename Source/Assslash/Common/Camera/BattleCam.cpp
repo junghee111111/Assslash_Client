@@ -40,7 +40,9 @@ void ABattleCam::Tick(float DeltaTime)
 	TArray<APlayerState*> PlayerStates = GameState->PlayerArray;
 	FVector SumLocation = FVector::ZeroVector;
 	int32 ValidPlayerCount = 0;
+	int32 CamXAdjust = 0;
 
+	// 모든 PlayerState를 불러와서 Actor Location에 접근한다.
 	for (APlayerState* pState : PlayerStates)
 	{
 		if (pState)
@@ -52,23 +54,39 @@ void ABattleCam::Tick(float DeltaTime)
 		}
 	}
 
-	if (ValidPlayerCount > 0)
+	// 플레이어가 2명이라면 서로의 거리를 계산하여 CamXAdjust 값을 도출해낸다.
+	if (ValidPlayerCount == 2)
 	{
-		FVector AvgLoc = SumLocation / ValidPlayerCount;
-		TargetLocation.X = AvgLoc.X + CamXOffset;
-		TargetLocation.Y = AvgLoc.Y + CamYOffset;
-		TargetLocation.Z = AvgLoc.Z + CamZOffset;
-		
-		SetActorLocation(FMath::VInterpTo(GetActorLocation(), TargetLocation, DeltaTime, InterpSpeed));
-		SetActorRotation(FMath::RInterpTo(GetActorRotation(), CalculateLookRotation(AvgLoc) , DeltaTime, InterpSpeed));
+		int32 distance = FVector::Dist(PlayerStates[0]->GetPawn()->GetActorLocation(), PlayerStates[1]->GetPawn()->GetActorLocation());
+		CamXAdjust = distance / -3;
 	}
-	
-	UE_LOG(LogAssslash, Log, TEXT("Look at %s"), *TargetLocation.ToString())
+
+	// 플레이어가 한명이라도 있으면 위치 조정 함수 실행
+	// 멀티플레이어 연결 시도 직후 상태라면 Prelogin 함수가 호출되기 전까지 Player가 0명이므로
+	// 이에 대한 예외 처리가 필요하기 때문에 아래의 If문으로 한번 보호해줘야한다.
+	if (ValidPlayerCount > 0) UpdateCamPositionAndRotation(SumLocation, ValidPlayerCount, CamXAdjust, DeltaTime);
 }
 
-FRotator ABattleCam::CalculateLookRotation(FVector LookAtLoc)
+/**
+ * 여러명의 플레이어의 위치 Vector를 계산하여 카메라를 1:1 대전 게임 형식에 어울리도록
+ * 위치 및 방향을 부드럽게 조정한다.
+ * @param SumLoc 모든 플레이어 Position Vector의 합
+ * @param ValidPlayerCount 모든 플레이어 수
+ * @param CamXAdjust Camera X position의 런타임 조정 값
+ * @param DeltaTime Tick 간 Delta time
+ */
+void ABattleCam::UpdateCamPositionAndRotation(FVector SumLoc, int32 ValidPlayerCount, int32 CamXAdjust, float DeltaTime)
 {
-	return UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), LookAtLoc);
+	FVector AvgLoc = SumLoc / ValidPlayerCount;
+	TargetLocation.X = AvgLoc.X + CamXOffset + CamXAdjust;
+	TargetLocation.Y = AvgLoc.Y + CamYOffset;
+	TargetLocation.Z = AvgLoc.Z + CamZOffset;
+		
+	SetActorLocation(FMath::VInterpTo(GetActorLocation(), TargetLocation, DeltaTime, InterpSpeed));
+
+	FRotator CalculatedLookRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
+	SetActorRotation(FMath::RInterpTo(GetActorRotation(), CalculatedLookRotation , DeltaTime, InterpSpeed));
+	
 }
 
 
