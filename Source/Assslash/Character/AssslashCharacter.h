@@ -40,9 +40,6 @@ public:
 	AAssslashCharacter();
 
 protected:
-	/**
-	 * inputs
-	 **/
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -79,12 +76,15 @@ public:
 	float MoveScale;
 
 protected:
-	/**
-	 *HUD
-	 **/
+	/** HUD */
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UAssslashHUD> PlayerHUDClass;
 
 	UPROPERTY()
 	class UAssslashHUD* PlayerHUD;
+
+	/** Behaviours */
+	UPROPERTY(Replicated)
+	uint32 bAttacking:1;
+	
 };

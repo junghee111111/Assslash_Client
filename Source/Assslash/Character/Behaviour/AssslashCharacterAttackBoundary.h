@@ -15,14 +15,15 @@ public:
 	// Sets default values for this actor's properties
 	AAssslashCharacterAttackBoundary();
 
+
+	UFUNCTION()
+	void OnOverlap(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* Collision;
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* AttackNiagaraSystem;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Assslash Attack Boundary")
-	float AttackCollisionRadius;
 
 protected:
 	// Called when the game starts or when spawned

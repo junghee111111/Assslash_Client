@@ -37,8 +37,7 @@ void AAssslashPlayerController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	AActor* CurrentViewTarget = GetViewTarget();
-	UE_LOG(LogAssslash, Warning, TEXT("Current ViewTarget: %s (Class: %s)"), *CurrentViewTarget->GetName(), *CurrentViewTarget->GetClass()->GetName());
-
+	// UE_LOG(LogAssslash, Warning, TEXT("Current ViewTarget: %s (Class: %s)"), *CurrentViewTarget->GetName(), *CurrentViewTarget->GetClass()->GetName());
 }
 
 

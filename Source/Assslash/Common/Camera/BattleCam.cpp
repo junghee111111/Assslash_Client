@@ -84,7 +84,7 @@ void ABattleCam::UpdateCamPositionAndRotation(FVector SumLoc, int32 ValidPlayerC
 		
 	SetActorLocation(FMath::VInterpTo(GetActorLocation(), TargetLocation, DeltaTime, InterpSpeed));
 
-	FRotator CalculatedLookRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
+	FRotator CalculatedLookRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), AvgLoc);
 	SetActorRotation(FMath::RInterpTo(GetActorRotation(), CalculatedLookRotation , DeltaTime, InterpSpeed));
 	
 }
