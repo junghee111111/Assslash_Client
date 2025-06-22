@@ -39,6 +39,9 @@ public:
 	// Sets default values for this character's properties
 	AAssslashCharacter();
 
+	/** Override to set up replicated properties */
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -86,5 +89,15 @@ protected:
 	/** Behaviours */
 	UPROPERTY(Replicated)
 	uint32 bAttacking:1;
+
+	UPROPERTY(EditAnywhere, Category="Assslash Behaviour")
+	uint32 AttackInterval;
+
+private:
+	float AttackLastTime;
 	
+public:
+	/** rpc functions*/
+	UFUNCTION(Server, Reliable)
+	void UpdateServerAttacking(bool bNewAttacking);
 };

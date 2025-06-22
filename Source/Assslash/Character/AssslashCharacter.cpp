@@ -13,7 +13,7 @@
 #include "Behaviour/AssslashCharacterAttackBoundary.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "UObject/ObjectRename.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AAssslashCharacter::AAssslashCharacter()
@@ -51,6 +51,7 @@ AAssslashCharacter::AAssslashCharacter()
 	// Attack
 	AttackOffsetAdjustment = FVector(0.f, 0.f, 0.f);
 	AttackClass = AAssslashCharacterAttackBoundary::StaticClass();
+	AttackInterval = .3f;
 
 	// Collision Straint
 	this->GetCapsuleComponent()->SetConstraintMode(EDOFMode::Type::YZPlane);
@@ -87,7 +88,18 @@ void AAssslashCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void AAssslashCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	float Now = GetWorld()->GetTimeSeconds();
+
+	if (bAttacking && Now - AttackLastTime > AttackInterval)
+	{
+		AttackLastTime = Now;
+		FTransform Transform = GetActorTransform();
+		FRotator Rotation = Transform.Rotator();
+		FVector Translation = Transform.GetTranslation() + Rotation.RotateVector(AttackOffsetAdjustment);
 	
+		GetWorld()->SpawnActor<AAssslashCharacterAttackBoundary>(AttackClass, Translation, Rotation);
+	}
 	
 }
 
@@ -123,6 +135,12 @@ void AAssslashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	UE_LOG(LogAssslash, Log, TEXT("PlayerPawn SetupPlayerInputComponent Done!"));
 }
 
+void AAssslashCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AAssslashCharacter, bAttacking, COND_SimulatedOnly);
+}
+
 void AAssslashCharacter::Move(const struct FInputActionValue& InputValue)
 {
 	
@@ -138,13 +156,18 @@ void AAssslashCharacter::Move(const struct FInputActionValue& InputValue)
 	}
 }
 
+/** Attack :: Runs on Client */
 void AAssslashCharacter::Attack(const FInputActionValue& ActionValue)
 {
-	FTransform Transform = GetActorTransform();
-	FRotator Rotation = Transform.Rotator();
-	FVector Translation = Transform.GetTranslation() + Rotation.RotateVector(AttackOffsetAdjustment);
+	if (!bAttacking) bAttacking = true;
 
-	GetWorld()->SpawnActor<AAssslashCharacterAttackBoundary>(AttackClass, Translation, Rotation);
+	UpdateServerAttacking(bAttacking);
+}
+
+/** Attack :: Runs on Server */
+void AAssslashCharacter::UpdateServerAttacking_Implementation(bool bNewAttacking)
+{
+	bAttacking = bNewAttacking;
 }
 
 void AAssslashCharacter::Dodge(const FInputActionValue& ActionValue)

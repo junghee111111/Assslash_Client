@@ -21,13 +21,14 @@ AAssslashCharacterAttackBoundary::AAssslashCharacterAttackBoundary()
 
 	AttackNiagaraSystem = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara System"));
 	AttackNiagaraSystem->SetupAttachment(Collision);
+
+	InitialLifeSpan = 2.f;
 }
 
 void AAssslashCharacterAttackBoundary::OnOverlap(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogAssslash, Log, TEXT("Hit Something"));
-	Destroy();
+	UE_LOG(LogAssslash, Log, TEXT("Hit Something %s"), *OtherActor->GetName());
 }
 
 // Called when the game starts or when spawned
