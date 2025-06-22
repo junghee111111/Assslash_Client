@@ -11,7 +11,7 @@ public class Assslash : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
-			"HTTP", "Json", "JsonUtilities", "UMG"
+			"HTTP", "Json", "JsonUtilities", "UMG", "Niagara"
 		});
 		
 		PublicIncludePaths.AddRange(new string[]

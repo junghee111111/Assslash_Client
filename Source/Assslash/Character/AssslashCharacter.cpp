@@ -10,6 +10,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Assslash/UI/AssslashHUD.h"
+#include "Behaviour/AssslashCharacterAttackBoundary.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "UObject/ObjectRename.h"
@@ -47,7 +48,11 @@ AAssslashCharacter::AAssslashCharacter()
 	PlayerHUDClass = nullptr;
 	PlayerHUD = nullptr;
 
-	
+	// Attack
+	AttackOffsetAdjustment = FVector(0.f, 0.f, 0.f);
+	AttackClass = AAssslashCharacterAttackBoundary::StaticClass();
+
+	// Collision Straint
 	this->GetCapsuleComponent()->SetConstraintMode(EDOFMode::Type::YZPlane);
 }
 
@@ -135,6 +140,11 @@ void AAssslashCharacter::Move(const struct FInputActionValue& InputValue)
 
 void AAssslashCharacter::Attack(const FInputActionValue& ActionValue)
 {
+	FTransform Transform = GetActorTransform();
+	FRotator Rotation = Transform.Rotator();
+	FVector Translation = Transform.GetTranslation() + Rotation.RotateVector(AttackOffsetAdjustment);
+
+	GetWorld()->SpawnActor<AAssslashCharacterAttackBoundary>(AttackClass, Translation, Rotation);
 }
 
 void AAssslashCharacter::Dodge(const FInputActionValue& ActionValue)

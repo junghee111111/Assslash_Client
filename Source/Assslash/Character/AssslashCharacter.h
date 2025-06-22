@@ -28,7 +28,13 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category="Enhanced Input")
 	class UInputAction* SwitchAction;
-	
+
+	UPROPERTY(EditAnywhere, Category="Assslash Attack")
+	FVector AttackOffsetAdjustment;
+
+	UPROPERTY(EditAnywhere, Category="Assslash Attack")
+	TSubclassOf<class AAssslashCharacterAttackBoundary> AttackClass;
+
 public:
 	// Sets default values for this character's properties
 	AAssslashCharacter();
