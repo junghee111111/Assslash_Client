@@ -12,6 +12,7 @@
 #include "Assslash/UI/AssslashHUD.h"
 #include "Behaviour/AssslashCharacterAttackBoundary.h"
 #include "Blueprint/UserWidget.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 
@@ -103,6 +104,17 @@ void AAssslashCharacter::Tick(float DeltaTime)
 		if (SpawnedAttackBoundary)
 		{
 			SpawnedAttackBoundary->OnAttackBoundaryFinished.AddDynamic(this, &AAssslashCharacter::OnAttackBoundaryCompleted);
+		}
+	}
+
+	if (bAttacking)
+	{
+		GetCharacterMovement()->Deactivate();
+	} else
+	{
+		if (!GetCharacterMovement()->IsActive())
+		{
+			GetCharacterMovement()->Activate();
 		}
 	}
 	

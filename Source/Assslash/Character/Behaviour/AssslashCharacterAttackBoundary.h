@@ -45,7 +45,7 @@ private:
 
 	// 이건 매크로임.
 	UPROPERTY(EditAnywhere, Category="Attack")
-	float LifeTimeAfterSpawn = 0.2f;
+	float LifeTimeAfterSpawn = 1.f;
 
 	UFUNCTION()
 	void OnLifeSpanFinished();
