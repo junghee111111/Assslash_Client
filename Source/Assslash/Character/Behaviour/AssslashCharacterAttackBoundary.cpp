@@ -21,8 +21,6 @@ AAssslashCharacterAttackBoundary::AAssslashCharacterAttackBoundary()
 
 	AttackNiagaraSystem = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara System"));
 	AttackNiagaraSystem->SetupAttachment(Collision);
-
-	InitialLifeSpan = 2.f;
 }
 
 void AAssslashCharacterAttackBoundary::OnOverlap(UPrimitiveComponent* HitComponent, AActor* OtherActor,
@@ -35,6 +33,8 @@ void AAssslashCharacterAttackBoundary::OnOverlap(UPrimitiveComponent* HitCompone
 void AAssslashCharacterAttackBoundary::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &AAssslashCharacterAttackBoundary::OnLifeSpanFinished, LifeTimeAfterSpawn, false);
 	
 }
 
@@ -44,3 +44,8 @@ void AAssslashCharacterAttackBoundary::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AAssslashCharacterAttackBoundary::OnLifeSpanFinished()
+{
+	OnAttackBoundaryFinished.Broadcast();
+	Destroy();
+}

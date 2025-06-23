@@ -52,6 +52,7 @@ AAssslashCharacter::AAssslashCharacter()
 	AttackOffsetAdjustment = FVector(0.f, 0.f, 0.f);
 	AttackClass = AAssslashCharacterAttackBoundary::StaticClass();
 	AttackInterval = .3f;
+	SpawnedAttackBoundary = nullptr;
 
 	// Collision Straint
 	this->GetCapsuleComponent()->SetConstraintMode(EDOFMode::Type::YZPlane);
@@ -91,14 +92,18 @@ void AAssslashCharacter::Tick(float DeltaTime)
 
 	float Now = GetWorld()->GetTimeSeconds();
 
-	if (bAttacking && Now - AttackLastTime > AttackInterval)
+	if (bAttacking && Now - AttackLastTime > AttackInterval && !SpawnedAttackBoundary)
 	{
 		AttackLastTime = Now;
 		FTransform Transform = GetActorTransform();
 		FRotator Rotation = Transform.Rotator();
 		FVector Translation = Transform.GetTranslation() + Rotation.RotateVector(AttackOffsetAdjustment);
 	
-		GetWorld()->SpawnActor<AAssslashCharacterAttackBoundary>(AttackClass, Translation, Rotation);
+		SpawnedAttackBoundary = GetWorld()->SpawnActor<AAssslashCharacterAttackBoundary>(AttackClass, Translation, Rotation);
+		if (SpawnedAttackBoundary)
+		{
+			SpawnedAttackBoundary->OnAttackBoundaryFinished.AddDynamic(this, &AAssslashCharacter::OnAttackBoundaryCompleted);
+		}
 	}
 	
 }
@@ -178,3 +183,8 @@ void AAssslashCharacter::Switch(const FInputActionValue& ActionValue)
 {
 }
 
+void AAssslashCharacter::OnAttackBoundaryCompleted()
+{
+	bAttacking = false;
+	SpawnedAttackBoundary = nullptr;
+}

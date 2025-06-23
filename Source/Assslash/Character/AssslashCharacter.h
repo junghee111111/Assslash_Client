@@ -90,11 +90,17 @@ protected:
 	UPROPERTY(Replicated)
 	uint32 bAttacking:1;
 
-	UPROPERTY(EditAnywhere, Category="Assslash Behaviour")
+	UPROPERTY(EditAnywhere, Category="Assslash Attack")
 	uint32 AttackInterval;
 
 private:
 	float AttackLastTime;
+
+	UPROPERTY(Transient, meta = (AllowPrivateAccess = "true"))
+	AAssslashCharacterAttackBoundary* SpawnedAttackBoundary;
+	
+	UFUNCTION()
+	void OnAttackBoundaryCompleted();
 	
 public:
 	/** rpc functions*/
