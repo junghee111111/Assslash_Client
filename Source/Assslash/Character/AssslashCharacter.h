@@ -100,7 +100,12 @@ private:
 	AAssslashCharacterAttackBoundary* SpawnedAttackBoundary;
 	
 	UFUNCTION()
-	void OnAttackBoundaryCompleted();
+	void OnLocalAttackBoundaryCompleted();
+
+	UFUNCTION()
+	void OnRemoteAttackBoundaryCompleted();
+
+	float MaxWalkSpeed = 500.0f;
 	
 public:
 	/** rpc functions*/

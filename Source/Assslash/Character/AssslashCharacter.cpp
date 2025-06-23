@@ -44,6 +44,7 @@ AAssslashCharacter::AAssslashCharacter()
 	
 	// Movement = CreateDefaultSubobject<UCharacterMovementComponent>(TEXT("Movement"));
 	MoveScale = 1.f;
+	MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 
 	// HUD
 	PlayerHUDClass = nullptr;
@@ -103,21 +104,28 @@ void AAssslashCharacter::Tick(float DeltaTime)
 		SpawnedAttackBoundary = GetWorld()->SpawnActor<AAssslashCharacterAttackBoundary>(AttackClass, Translation, Rotation);
 		if (SpawnedAttackBoundary)
 		{
-			SpawnedAttackBoundary->OnAttackBoundaryFinished.AddDynamic(this, &AAssslashCharacter::OnAttackBoundaryCompleted);
+			if (IsLocallyControlled())
+			{
+				SpawnedAttackBoundary->SetIsLocal(true);
+				SpawnedAttackBoundary->OnLocalAttackBoundaryFinished.AddDynamic(this, &AAssslashCharacter::OnLocalAttackBoundaryCompleted);
+			} else
+			{
+				SpawnedAttackBoundary->OnRemoteAttackBoundaryFinished.AddDynamic(this, &AAssslashCharacter::OnRemoteAttackBoundaryCompleted);
+			}
+			
 		}
 	}
 
 	if (bAttacking)
 	{
-		GetCharacterMovement()->Deactivate();
+		GetCharacterMovement()->MaxWalkSpeed = 0.f;
 	} else
 	{
-		if (!GetCharacterMovement()->IsActive())
+		if (GetCharacterMovement()->MaxWalkSpeed <= 10)
 		{
-			GetCharacterMovement()->Activate();
+			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 		}
 	}
-	
 }
 
 
@@ -195,8 +203,19 @@ void AAssslashCharacter::Switch(const FInputActionValue& ActionValue)
 {
 }
 
-void AAssslashCharacter::OnAttackBoundaryCompleted()
+void AAssslashCharacter::OnLocalAttackBoundaryCompleted()
 {
-	bAttacking = false;
-	SpawnedAttackBoundary = nullptr;
+	if (IsLocallyControlled())
+	{
+		bAttacking = false;
+		SpawnedAttackBoundary = nullptr;
+	}
+}
+
+void AAssslashCharacter::OnRemoteAttackBoundaryCompleted()
+{
+	if (!IsLocallyControlled()){
+		bAttacking = false;
+		SpawnedAttackBoundary = nullptr;
+	}
 }

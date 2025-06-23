@@ -23,8 +23,10 @@ AAssslashCharacterAttackBoundary::AAssslashCharacterAttackBoundary()
 	AttackNiagaraSystem->SetupAttachment(Collision);
 }
 
+
+
 void AAssslashCharacterAttackBoundary::OnOverlap(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                                 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogAssslash, Log, TEXT("Hit Something %s"), *OtherActor->GetName());
 }
@@ -35,7 +37,6 @@ void AAssslashCharacterAttackBoundary::BeginPlay()
 	Super::BeginPlay();
 
 	GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &AAssslashCharacterAttackBoundary::OnLifeSpanFinished, LifeTimeAfterSpawn, false);
-	
 }
 
 // Called every frame
@@ -44,8 +45,19 @@ void AAssslashCharacterAttackBoundary::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AAssslashCharacterAttackBoundary::SetIsLocal(bool bNewIsLocal)
+{
+	bIsLocal = bNewIsLocal;
+}
+
 void AAssslashCharacterAttackBoundary::OnLifeSpanFinished()
 {
-	OnAttackBoundaryFinished.Broadcast();
+	if (bIsLocal)
+	{
+		OnLocalAttackBoundaryFinished.Broadcast();
+	} else
+	{
+		OnRemoteAttackBoundaryFinished.Broadcast();
+	}
 	Destroy();
 }

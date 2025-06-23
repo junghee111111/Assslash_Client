@@ -7,7 +7,8 @@
 #include "AssslashCharacterAttackBoundary.generated.h"
 
 // 인자가 없는 동적 멀티캐스트 델리게이트 선언함. Dynamic은 Blueprint binding 가능하게 해준다함.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackBoundaryFinished);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLocalAttackBoundaryFinished);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRemoteAttackBoundaryFinished);
 
 UCLASS()
 class ASSSLASH_API AAssslashCharacterAttackBoundary : public AActor
@@ -20,7 +21,10 @@ public:
 
 	// 선언된 Delegate type 변수 선언. 이벤트를 블루프린트에도 노출시킨다.
 	UPROPERTY(BlueprintAssignable, Category="Attack")
-	FOnAttackBoundaryFinished OnAttackBoundaryFinished;
+	FOnLocalAttackBoundaryFinished OnLocalAttackBoundaryFinished;
+
+	UPROPERTY(BlueprintAssignable, Category="Attack")
+	FOnLocalAttackBoundaryFinished OnRemoteAttackBoundaryFinished;
 
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -39,6 +43,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void SetIsLocal(bool bNewIsLocal);
+
 private:
 	// 일정 시간 후 함수 호출하기 위한 타이머 핸들
 	FTimerHandle DestroyTimerHandle;
@@ -49,4 +55,6 @@ private:
 
 	UFUNCTION()
 	void OnLifeSpanFinished();
+
+	bool bIsLocal = false;
 };
