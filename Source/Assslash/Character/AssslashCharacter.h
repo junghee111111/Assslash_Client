@@ -111,4 +111,7 @@ public:
 	/** rpc functions*/
 	UFUNCTION(Server, Reliable)
 	void UpdateServerAttacking(bool bNewAttacking);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetIsAttacking();
 };

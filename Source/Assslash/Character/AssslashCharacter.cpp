@@ -219,3 +219,8 @@ void AAssslashCharacter::OnRemoteAttackBoundaryCompleted()
 		SpawnedAttackBoundary = nullptr;
 	}
 }
+
+bool AAssslashCharacter::GetIsAttacking()
+{
+	return bAttacking;
+}
