@@ -88,13 +88,16 @@ protected:
 
 	/** Behaviours */
 	UPROPERTY(Replicated)
-	uint32 bAttacking:1;
+	uint8 bAttacking:1;
 
 	UPROPERTY(EditAnywhere, Category="Assslash Attack")
-	uint32 AttackInterval;
+	float ActionInterval;
+
+	UPROPERTY(Replicated)
+	uint8 bDodging:1;
 
 private:
-	float AttackLastTime;
+	float ActionLastTime;
 
 	UPROPERTY(Transient, meta = (AllowPrivateAccess = "true"))
 	AAssslashCharacterAttackBoundary* SpawnedAttackBoundary;
@@ -114,4 +117,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool GetIsAttacking();
+
+	UFUNCTION(Server, Reliable)
+	void UpdateServerDodging(bool bNewDodging);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetIsDodging();
 };

@@ -50,6 +50,11 @@ void AAssslashCharacterAttackBoundary::SetIsLocal(bool bNewIsLocal)
 	bIsLocal = bNewIsLocal;
 }
 
+void AAssslashCharacterAttackBoundary::SetLifeTimeAfterSpawn(float NewLifeTimeAfterSpawn)
+{
+	LifeTimeAfterSpawn = NewLifeTimeAfterSpawn;
+}
+
 void AAssslashCharacterAttackBoundary::OnLifeSpanFinished()
 {
 	if (bIsLocal)

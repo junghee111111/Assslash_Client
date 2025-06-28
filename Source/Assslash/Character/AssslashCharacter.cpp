@@ -53,7 +53,7 @@ AAssslashCharacter::AAssslashCharacter()
 	// Attack
 	AttackOffsetAdjustment = FVector(0.f, 0.f, 0.f);
 	AttackClass = AAssslashCharacterAttackBoundary::StaticClass();
-	AttackInterval = .3f;
+	ActionInterval = .5f;
 	SpawnedAttackBoundary = nullptr;
 
 	// Collision Straint
@@ -94,9 +94,9 @@ void AAssslashCharacter::Tick(float DeltaTime)
 
 	float Now = GetWorld()->GetTimeSeconds();
 
-	if (bAttacking && Now - AttackLastTime > AttackInterval && !SpawnedAttackBoundary)
+	if (bAttacking && Now - ActionLastTime > ActionInterval && !SpawnedAttackBoundary)
 	{
-		AttackLastTime = Now;
+		ActionLastTime = Now;
 		FTransform Transform = GetActorTransform();
 		FRotator Rotation = Transform.Rotator();
 		FVector Translation = Transform.GetTranslation() + Rotation.RotateVector(AttackOffsetAdjustment);
@@ -195,9 +195,6 @@ void AAssslashCharacter::UpdateServerAttacking_Implementation(bool bNewAttacking
 	bAttacking = bNewAttacking;
 }
 
-void AAssslashCharacter::Dodge(const FInputActionValue& ActionValue)
-{
-}
 
 void AAssslashCharacter::Switch(const FInputActionValue& ActionValue)
 {
@@ -222,5 +219,37 @@ void AAssslashCharacter::OnRemoteAttackBoundaryCompleted()
 
 bool AAssslashCharacter::GetIsAttacking()
 {
-	return bAttacking;
+	if (bAttacking == 1)
+	{
+		return true;
+	} else
+	{
+		return false;
+	}
 }
+
+bool AAssslashCharacter::GetIsDodging()
+{
+	if (bDodging == 1)
+	{
+		return true;
+	} else
+	{
+		return false;
+	}
+}
+
+/** Dodging :: Runs on Client */
+void AAssslashCharacter::Dodge(const FInputActionValue& ActionValue)
+{
+	if (!bDodging) bDodging = true;
+
+	UpdateServerDodging(bDodging);
+}
+
+/** Dodging :: Runs on Server */
+void AAssslashCharacter::UpdateServerDodging_Implementation(bool bNewDodging)
+{
+	bDodging = bNewDodging;
+}
+

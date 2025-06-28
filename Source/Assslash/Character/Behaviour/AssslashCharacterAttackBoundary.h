@@ -45,13 +45,15 @@ public:
 
 	void SetIsLocal(bool bNewIsLocal);
 
+	void SetLifeTimeAfterSpawn(float NewLifeTimeAfterSpawn);
+
 private:
 	// 일정 시간 후 함수 호출하기 위한 타이머 핸들
 	FTimerHandle DestroyTimerHandle;
 
 	// 이건 매크로임.
 	UPROPERTY(EditAnywhere, Category="Attack")
-	float LifeTimeAfterSpawn = 1.f;
+	float LifeTimeAfterSpawn = .3f;
 
 	UFUNCTION()
 	void OnLifeSpanFinished();
