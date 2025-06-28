@@ -116,7 +116,7 @@ void AAssslashCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	if (bAttacking)
+	if (bAttacking || bDodging)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 0.f;
 	} else
@@ -184,6 +184,7 @@ void AAssslashCharacter::Move(const struct FInputActionValue& InputValue)
 /** Attack :: Runs on Client */
 void AAssslashCharacter::Attack(const FInputActionValue& ActionValue)
 {
+	if (bDodging==1) return;
 	if (!bAttacking) bAttacking = true;
 
 	UpdateServerAttacking(bAttacking);
@@ -222,10 +223,8 @@ bool AAssslashCharacter::GetIsAttacking()
 	if (bAttacking == 1)
 	{
 		return true;
-	} else
-	{
-		return false;
 	}
+	return false;
 }
 
 bool AAssslashCharacter::GetIsDodging()
@@ -233,18 +232,36 @@ bool AAssslashCharacter::GetIsDodging()
 	if (bDodging == 1)
 	{
 		return true;
-	} else
+	}
+	return false;
+}
+
+void AAssslashCharacter::SetIsDodging(bool newDodging)
+{
+	if (IsLocallyControlled())
 	{
-		return false;
+		if (newDodging == true)
+		{
+			bDodging = 1;
+		} else
+		{
+			bDodging = 0;
+		}
+		UpdateServerDodging(bDodging);
 	}
 }
 
 /** Dodging :: Runs on Client */
 void AAssslashCharacter::Dodge(const FInputActionValue& ActionValue)
 {
-	if (!bDodging) bDodging = true;
-
-	UpdateServerDodging(bDodging);
+	float Now = GetWorld()->GetTimeSeconds();
+	if (bDodging == 1) return;
+	if (bAttacking == 1) return;
+	if (!bDodging  && Now - ActionLastTime > ActionInterval)
+	{
+		ActionLastTime = Now;
+		SetIsDodging(true);
+	}
 }
 
 /** Dodging :: Runs on Server */

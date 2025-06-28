@@ -123,4 +123,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool GetIsDodging();
+
+	UFUNCTION(BlueprintCallable)
+	void SetIsDodging(bool newDodging);
 };
