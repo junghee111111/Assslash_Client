@@ -42,6 +42,12 @@ public:
 	/** Override to set up replicated properties */
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	// ======================================================
+	// Delegates
+
+	// UPROPERTY(BlueprintAssignable, Category="Assslash|Damage")
+	// FTakeAnyDamageSignature OnTakeAnyDamage;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

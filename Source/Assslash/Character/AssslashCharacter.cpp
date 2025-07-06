@@ -247,6 +247,7 @@ void AAssslashCharacter::SetIsDodging(bool newDodging)
 		{
 			bDodging = 0;
 		}
+		UE_LOG(LogAssslash, Log, TEXT("SetIsDodging : %d %s"), bDodging, *GetName());
 		UpdateServerDodging(bDodging);
 	}
 }
@@ -257,10 +258,11 @@ void AAssslashCharacter::Dodge(const FInputActionValue& ActionValue)
 	float Now = GetWorld()->GetTimeSeconds();
 	if (bDodging == 1) return;
 	if (bAttacking == 1) return;
-	if (!bDodging  && Now - ActionLastTime > ActionInterval)
+	if (bDodging == 0  && Now - ActionLastTime > ActionInterval)
 	{
 		ActionLastTime = Now;
 		SetIsDodging(true);
+		UE_LOG(LogAssslash, Log, TEXT("Dodge : %s"), *GetName());
 	}
 }
 
