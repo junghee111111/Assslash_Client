@@ -46,7 +46,7 @@ public:
 	// Delegates
 
 	// UPROPERTY(BlueprintAssignable, Category="Assslash|Damage")
-	// FTakeAnyDamageSignature OnTakeAnyDamage;
+	FTakeAnyDamageSignature OnTakeAnyDamage;
 
 protected:
 	// Called when the game starts or when spawned

@@ -24,7 +24,19 @@ void ULifeComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
+	AActor* Owner = GetOwner();
+	if (Owner)
+	{
+		Owner->OnTakeAnyDamage.AddDynamic(this, &ULifeComponent::TakeDamage);
+	}
 	
+}
+
+void ULifeComponent::TakeDamage(AActor* DamagedActor, float Damage,
+	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (Damage <= 0) return;
+	Hp = FMath::Clamp((Hp - Damage), 0.f, HpMax);
 }
 
 

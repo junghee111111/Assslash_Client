@@ -26,6 +26,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	float Hp;
 
+	UFUNCTION()
+	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 	
 
 public:
