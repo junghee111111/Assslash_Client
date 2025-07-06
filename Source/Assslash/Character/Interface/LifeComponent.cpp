@@ -47,4 +47,3 @@ void ULifeComponent::TakeDamage(AActor* DamagedActor, float Damage,
 //
 // 	// ...
 // }
-//

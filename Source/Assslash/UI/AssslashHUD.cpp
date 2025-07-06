@@ -2,6 +2,7 @@
 
 #include "Components/ProgressBar.h"
 
+
 void UAssslashHUD::SetHealthLeft(float Health, float MaxHealth)
 {
 	if (LtHealthBar)
@@ -17,3 +18,15 @@ void UAssslashHUD::SetHealthRight(float Health, float MaxHealth)
 		RtHealthBar->SetPercent(Health / MaxHealth);
 	}
 }
+
+float UAssslashHUD::GetHealthRight()
+{
+	return HealthRight;
+}
+
+float UAssslashHUD::GetHealthLeft()
+{
+	return HealthLeft;
+}
+
+

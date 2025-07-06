@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/Actor.h"
 #include "AssslashCharacter.generated.h"
 
 UCLASS()
@@ -46,7 +47,7 @@ public:
 	// Delegates
 
 	// UPROPERTY(BlueprintAssignable, Category="Assslash|Damage")
-	FTakeAnyDamageSignature OnTakeAnyDamage;
+	// FTakeAnyDamageSignature OnTakeAnyDamage;
 
 protected:
 	// Called when the game starts or when spawned
