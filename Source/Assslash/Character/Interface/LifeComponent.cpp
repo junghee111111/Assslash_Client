@@ -17,6 +17,15 @@ ULifeComponent::ULifeComponent()
 	// ...
 }
 
+float ULifeComponent::GetHp() const
+{
+	return Hp;
+}
+
+float ULifeComponent::GetHpMax() const
+{
+	return HpMax;
+}
 
 // Called when the game starts
 void ULifeComponent::BeginPlay()

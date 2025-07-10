@@ -7,6 +7,8 @@
 UCLASS(Abstract)
 class ASSSLASH_API UAssslashHUD : public UUserWidget
 {
+public:
+	virtual void NativeConstruct() override;
 
 private:
 	GENERATED_BODY()

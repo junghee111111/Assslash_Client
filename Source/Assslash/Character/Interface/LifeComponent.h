@@ -16,6 +16,9 @@ public:
 	// Sets default values for this component's properties
 	ULifeComponent();
 
+	float GetHp() const;
+	float GetHpMax() const;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

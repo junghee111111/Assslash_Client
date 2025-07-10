@@ -67,12 +67,13 @@ void AAssslashCharacter::BeginPlay()
 
 	if (IsLocallyControlled() && PlayerHUDClass)
 	{
+		// init HUD
 		AAssslashPlayerController* APC = GetController<AAssslashPlayerController>();
 		check(APC);
 
 		PlayerHUD = CreateWidget<UAssslashHUD>(APC, PlayerHUDClass);
 		check(PlayerHUD);
-
+		
 		PlayerHUD->AddToPlayerScreen();
 	}
 }
@@ -92,11 +93,9 @@ void AAssslashCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	float Now = GetWorld()->GetTimeSeconds();
 
-	if (bAttacking && Now - ActionLastTime > ActionInterval && !SpawnedAttackBoundary)
+	if (bAttacking && !SpawnedAttackBoundary)
 	{
-		ActionLastTime = Now;
 		FTransform Transform = GetActorTransform();
 		FRotator Rotation = Transform.Rotator();
 		FVector Translation = Transform.GetTranslation() + Rotation.RotateVector(AttackOffsetAdjustment);
@@ -121,7 +120,7 @@ void AAssslashCharacter::Tick(float DeltaTime)
 		GetCharacterMovement()->MaxWalkSpeed = 0.f;
 	} else
 	{
-		if (GetCharacterMovement()->MaxWalkSpeed <= 10)
+		if (GetCharacterMovement()->MaxWalkSpeed <= 1)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 		}
@@ -184,16 +183,28 @@ void AAssslashCharacter::Move(const struct FInputActionValue& InputValue)
 /** Attack :: Runs on Client */
 void AAssslashCharacter::Attack(const FInputActionValue& ActionValue)
 {
-	if (bDodging==1) return;
-	if (!bAttacking) bAttacking = true;
-
-	UpdateServerAttacking(bAttacking);
+	if (bDodging == 1 || bAttacking == 1) return;
+	
+	float Now = GetWorld()->GetTimeSeconds();
+	if (bDodging == 0  && Now - ActionLastTime > ActionInterval)
+	{
+		ActionLastTime = Now;
+		bAttacking = 1;
+		UpdateServerAttacking(true);
+	}
 }
 
 /** Attack :: Runs on Server */
 void AAssslashCharacter::UpdateServerAttacking_Implementation(bool bNewAttacking)
 {
-	bAttacking = bNewAttacking;
+	UE_LOG(LogAssslash, Log, TEXT("UpdateServerAttacking : %d %s"), bNewAttacking, *GetName());
+	if (bNewAttacking == true)
+	{
+		bAttacking = 1;
+	} else
+	{
+		bAttacking = 0;
+	}
 }
 
 
@@ -256,8 +267,7 @@ void AAssslashCharacter::SetIsDodging(bool newDodging)
 void AAssslashCharacter::Dodge(const FInputActionValue& ActionValue)
 {
 	float Now = GetWorld()->GetTimeSeconds();
-	if (bDodging == 1) return;
-	if (bAttacking == 1) return;
+	if (bDodging == 1 || bAttacking == 1) return;
 	if (bDodging == 0  && Now - ActionLastTime > ActionInterval)
 	{
 		ActionLastTime = Now;
