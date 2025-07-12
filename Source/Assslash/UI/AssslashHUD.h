@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Assslash/Character/AssslashCharacter.h"
 #include "Blueprint/UserWidget.h"
 #include "AssslashHUD.generated.h"
 
@@ -8,12 +9,13 @@ UCLASS(Abstract)
 class ASSSLASH_API UAssslashHUD : public UUserWidget
 {
 public:
-	virtual void NativeConstruct() override;
+	void InitWithEnemy(AAssslashCharacter* Me, AAssslashCharacter* Enemy);
 
 private:
 	GENERATED_BODY()
 
 public:
+	void SetHealth(FString PlayerIndex, float Health, float MaxHealth);
 
 	void SetHealthLeft(float Health, float MaxHealth);
 

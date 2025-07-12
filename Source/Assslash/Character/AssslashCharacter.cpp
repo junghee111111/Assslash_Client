@@ -4,15 +4,18 @@
 #include "AssslashCharacter.h"
 
 #include "AssslashPlayerController.h"
+#include "EngineUtils.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Assslash/Assslash.h"
+#include "Assslash/Common/AssslashGameMode.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Assslash/UI/AssslashHUD.h"
 #include "Behaviour/AssslashCharacterAttackBoundary.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/GameStateBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 
@@ -65,18 +68,24 @@ void AAssslashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (IsLocallyControlled() && PlayerHUDClass)
+
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		// init HUD
-		AAssslashPlayerController* APC = GetController<AAssslashPlayerController>();
-		check(APC);
-
-		PlayerHUD = CreateWidget<UAssslashHUD>(APC, PlayerHUDClass);
-		check(PlayerHUD);
-		
-		PlayerHUD->AddToPlayerScreen();
+		if (AAssslashGameMode* GameMode = Cast<AAssslashGameMode>(GetWorld()->GetAuthGameMode()))
+		{
+			GameMode->OnPlayerConnected.AddDynamic(this, &AAssslashCharacter::HandleNewPlayerConnected);
+			GameMode->OnPlayerPawnReady.AddDynamic(this, &AAssslashCharacter::HandleNewPlayerReady);
+		}
+	}
+	if (IsLocallyControlled())
+	{
+		int32 CurrentTotalPlayersNum = 0;
+		UWorld* World = GetWorld();
 	}
 }
+
+
 
 void AAssslashCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
@@ -94,6 +103,11 @@ void AAssslashCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 
+	if (PlayerHUD == nullptr && IsValid(Enemy) && IsLocallyControlled() && PlayerHUDClass)
+	{
+		ShowHUD(GetController<AAssslashPlayerController>());
+	}
+	
 	if (bAttacking && !SpawnedAttackBoundary)
 	{
 		FTransform Transform = GetActorTransform();
@@ -163,6 +177,65 @@ void AAssslashCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(AAssslashCharacter, bAttacking, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(AAssslashCharacter, bDodging, COND_SimulatedOnly);
+	DOREPLIFETIME(AAssslashCharacter, Enemy);
+}
+
+void AAssslashCharacter::ShowHUD(AAssslashPlayerController* APC)
+{
+	PlayerHUD = CreateWidget<UAssslashHUD>(APC, PlayerHUDClass);
+	if (!PlayerHUD) return;
+	if (!IsValid(Enemy))
+	{
+		UE_LOG(LogAssslash, Error, TEXT("[%s] enemy is not found!"), *GetName())
+		return;
+	}
+	PlayerHUD->AddToPlayerScreen();
+	PlayerHUD->InitWithEnemy(this, Enemy);
+	UE_LOG(LogAssslash, Error, TEXT("[%s] Display HUD Correctly!"), *GetName())
+}
+
+void AAssslashCharacter::Multicast_DisplayHUD_Implementation()
+{
+	if (!IsLocallyControlled())
+	{
+		UE_LOG(LogAssslash, Error, TEXT("[MC:%s] Not locally controlled, skipping HUD creation."), *GetName());
+		return; 
+	}
+    
+	AAssslashPlayerController* APC = GetController<AAssslashPlayerController>();
+	if (APC && PlayerHUDClass && PlayerHUD == nullptr)
+	{
+		ShowHUD(APC);
+	}
+	else if (PlayerHUD && PlayerHUD->IsInViewport())
+	{
+		UE_LOG(LogAssslash, Log, TEXT("[MC:%s] HUD already exists and is in viewport. Not re-creating."), *GetName());
+	}
+	else if (PlayerHUD && !PlayerHUD->IsInViewport())
+	{
+		PlayerHUD->AddToPlayerScreen();
+		UE_LOG(LogAssslash, Log, TEXT("[MC:%s] Existing HUD re-added to screen."), *GetName());
+	}
+	else if (!PlayerHUDClass)
+	{
+		UE_LOG(LogAssslash, Error, TEXT("[MC:%s] PlayerHUDClass is not set! Please assign it in Blueprint."), *GetName());
+	}
+	
+}
+
+
+void AAssslashCharacter::HandleNewPlayerReady(APlayerController* NewPlayerController)
+{
+	// UE_LOG(LogAssslash, Log, TEXT("[%s] HandleNewPlayerReady : %s"),*GetName() ,*NewPlayerController->GetName());
+}
+
+void AAssslashCharacter::HandleNewPlayerConnected(APlayerController* NewPlayerController)
+{
+	UWorld* World = GetWorld();
+	int32 CurrentTotalPlayersNum = World->GetNumPlayerControllers();
+	int32 CurrentPlayerStatesNum = World->GetGameState()->PlayerArray.Num();
+	//UE_LOG(LogAssslash, Log, TEXT("[SERVER] HandleNewPlayerConnected : %s (c : %d) (s : %d)"), *NewPlayerController->GetName(), CurrentTotalPlayersNum,CurrentPlayerStatesNum);
 }
 
 void AAssslashCharacter::Move(const struct FInputActionValue& InputValue)
@@ -229,6 +302,15 @@ void AAssslashCharacter::OnRemoteAttackBoundaryCompleted()
 	}
 }
 
+void AAssslashCharacter::SetEnemy(AAssslashCharacter* NewEnemy)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		Enemy = NewEnemy;
+		UE_LOG(LogAssslash, Log, TEXT("[SERVER] %s's Enemy set to %s."), *GetName(), *Enemy->GetName());
+	}
+}
+
 bool AAssslashCharacter::GetIsAttacking()
 {
 	if (bAttacking == 1)
@@ -281,6 +363,5 @@ void AAssslashCharacter::UpdateServerDodging_Implementation(bool bNewDodging)
 {
 	bDodging = bNewDodging;
 }
-
 
 

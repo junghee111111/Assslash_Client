@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "Assslash/Assslash.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/Actor.h"
+#include "AssslashPlayerController.h"
 #include "AssslashCharacter.generated.h"
 
 UCLASS()
@@ -40,6 +42,9 @@ public:
 	// Sets default values for this character's properties
 	AAssslashCharacter();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_DisplayHUD();
+
 	/** Override to set up replicated properties */
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -50,6 +55,15 @@ public:
 	// FTakeAnyDamageSignature OnTakeAnyDamage;
 
 protected:
+	UFUNCTION()
+	void ShowHUD(AAssslashPlayerController* APC);
+	
+	
+	UFUNCTION()
+	void HandleNewPlayerConnected(APlayerController* NewPlayerController);
+	
+	UFUNCTION()
+	void HandleNewPlayerReady(APlayerController* NewPlayerController);
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -118,6 +132,11 @@ private:
 	float MaxWalkSpeed = 500.0f;
 	
 public:
+	UPROPERTY(Replicated)
+	AAssslashCharacter* Enemy;
+	
+	void SetEnemy(AAssslashCharacter* NewEnemy);
+	
 	/** rpc functions*/
 	UFUNCTION(Server, Reliable)
 	void UpdateServerAttacking(bool bNewAttacking);

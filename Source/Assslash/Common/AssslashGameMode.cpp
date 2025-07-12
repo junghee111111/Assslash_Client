@@ -51,5 +51,56 @@ FString AAssslashGameMode::InitNewPlayer(APlayerController* NewPlayerController,
 	NewPlayerController->StartSpot = FreePlayerStarts.Pop();
 	UE_LOG(LogAssslash, Log, TEXT("New player '%s' start : %s"),*NewPlayerController->GetName(), *NewPlayerController->StartSpot->GetName())
 
-	return Super::InitNewPlayer(NewPlayerController, UniqueId, Options, Portal);
+	FString Result = Super::InitNewPlayer(NewPlayerController, UniqueId, Options, Portal);
+
+	if (Result.IsEmpty())
+	{
+		// OnPlayerConnected Delegate 호출한다.
+		OnPlayerConnected.Broadcast(NewPlayerController);
+	}
+	
+	return Result;
+}
+
+void AAssslashGameMode::HandleAllPlayersReady()
+{
+	AAssslashCharacter* Player1Char = Cast<AAssslashCharacter>(ReadyPlayers[0]->GetPawn());
+	AAssslashCharacter* Player2Char = Cast<AAssslashCharacter>(ReadyPlayers[1]->GetPawn());
+	
+	
+
+	if (IsValid(Player1Char) && IsValid(Player2Char))
+	{
+		// 서로를 Enemy로 설정 (서버에서만 실행됨)
+		Player1Char->SetEnemy(Player2Char); 
+		Player2Char->SetEnemy(Player1Char);
+		UE_LOG(LogAssslash, Log, TEXT("[GAMEMODE] Set enemies. %s is enemy of %s, and vice versa."), *Player1Char->GetName(), *Player2Char->GetName());
+	}
+}
+
+void AAssslashGameMode::PostLogin(APlayerController* NewPlayerController)
+{
+	Super::PostLogin(NewPlayerController);
+	UE_LOG(LogAssslash, Log, TEXT("[GAMEMODE] PostLogin : %s"), *NewPlayerController->GetName());
+	
+	APlayerController* PC = Cast<APlayerController>(NewPlayerController);
+	if (NewPlayerController && NewPlayerController->GetPawn())
+	{
+		if (!ReadyPlayers.Contains(NewPlayerController))
+		{
+			ReadyPlayers.Add(PC);
+			OnPlayerPawnReady.Broadcast(PC);
+			if (ReadyPlayers.Num() == 2)
+			{
+				HandleAllPlayersReady();
+			}
+		}
+	}
+}
+
+void AAssslashGameMode::RestartPlayer(AController* NewPlayerController)
+{
+	Super::RestartPlayer(NewPlayerController);
+	UE_LOG(LogAssslash, Log, TEXT("[GAMEMODE] RestartPlayer : %s"), *NewPlayerController->GetName())
+	
 }
