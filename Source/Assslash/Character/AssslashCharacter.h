@@ -10,6 +10,9 @@
 #include "AssslashPlayerController.h"
 #include "AssslashCharacter.generated.h"
 
+class UAnimMontage;
+class UAnimInstance;
+
 UCLASS()
 class ASSSLASH_API AAssslashCharacter : public ACharacter
 {
@@ -66,19 +69,55 @@ protected:
 	void HandleNewPlayerReady(APlayerController* NewPlayerController);
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	/** Handle input to update location. */
-	void Move(const FInputActionValue& ActionValue);
-
-	/** Handle input to start attacking. */
-	void Attack(const FInputActionValue& ActionValue);
-
+	UFUNCTION()
+	void HandleAnimNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload);
+	
 	/** Handle input to start dodging. */
 	void Dodge(const FInputActionValue& ActionValue);
 
 	/** Handle input to change between 2 characters. (like tekken tag) */
 	void Switch(const FInputActionValue& ActionValue);
+
+	
+protected:
+	//  ========== :: Attack :: ==========
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack|Animation")
+	UAnimMontage* AttackMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack")
+	float AttackTraceDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack")
+	FVector AttackTraceOffset;
+	
+	/** Handle input to update location. */
+	void Move(const FInputActionValue& ActionValue);
+	
+	/** Handle input to start attacking. */
+	void Attack(const FInputActionValue& ActionValue);
+
+	UFUNCTION(Server, Reliable)
+	void Server_PerformAttackTrace();
+
+	void OnAttackHit(AActor* HitActor, FVector HitLocation);
+
+
+	UFUNCTION(Server, Reliable)
+	void UpdateServerAttacking(bool bNewAttacking);
+
+	UPROPERTY(Replicated)
+	uint8 bAttacking:1;
+
+	//  ========== :: Dodge :: ==========
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack|Animation")
+	UAnimMontage* DodgeMontage;
+
+	//  ========== :: Switch :: ==========
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack|Animation")
+	UAnimMontage* SwitchMontage;
 
 public:	
 	// Called every frame
@@ -108,8 +147,6 @@ protected:
 	class UAssslashHUD* PlayerHUD;
 
 	/** Behaviours */
-	UPROPERTY(Replicated)
-	uint8 bAttacking:1;
 
 	UPROPERTY(EditAnywhere, Category="Assslash Attack")
 	float ActionInterval;
@@ -136,10 +173,6 @@ public:
 	AAssslashCharacter* Enemy;
 	
 	void SetEnemy(AAssslashCharacter* NewEnemy);
-	
-	/** rpc functions*/
-	UFUNCTION(Server, Reliable)
-	void UpdateServerAttacking(bool bNewAttacking);
 
 	UFUNCTION(BlueprintCallable)
 	bool GetIsAttacking();

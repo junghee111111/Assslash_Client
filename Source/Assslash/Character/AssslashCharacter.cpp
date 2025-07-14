@@ -58,6 +58,7 @@ AAssslashCharacter::AAssslashCharacter()
 	AttackClass = AAssslashCharacterAttackBoundary::StaticClass();
 	ActionInterval = .5f;
 	SpawnedAttackBoundary = nullptr;
+	AttackTraceDistance = 1000.f;
 
 	// Collision Straint
 	this->GetCapsuleComponent()->SetConstraintMode(EDOFMode::Type::YZPlane);
@@ -67,7 +68,6 @@ AAssslashCharacter::AAssslashCharacter()
 void AAssslashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 
 	if (GetLocalRole() == ROLE_Authority)
 	{
@@ -82,6 +82,11 @@ void AAssslashCharacter::BeginPlay()
 	{
 		int32 CurrentTotalPlayersNum = 0;
 		UWorld* World = GetWorld();
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance)
+		{
+			AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &AAssslashCharacter::HandleAnimNotifyBegin);
+		}
 	}
 }
 
@@ -93,6 +98,22 @@ void AAssslashCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		PlayerHUD->RemoveFromParent();
 		PlayerHUD = nullptr;
+	}
+}
+
+void AAssslashCharacter::HandleAnimNotifyBegin(FName NotifyName,
+	const FBranchingPointNotifyPayload& BranchingPointPayload)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	UE_LOG(LogAssslash, Warning, TEXT("HandleAnimNotifyBegin : %s"), *NotifyName.ToString());
+	if (NotifyName == TEXT("AN_AttackTrace"))
+	{
+		Server_PerformAttackTrace();
+	}
+	if (NotifyName == TEXT("AN_AttackEnd"))
+	{
+		bAttacking = 0;
+		UpdateServerAttacking(false);
 	}
 }
 
@@ -108,26 +129,26 @@ void AAssslashCharacter::Tick(float DeltaTime)
 		ShowHUD(GetController<AAssslashPlayerController>());
 	}
 	
-	if (bAttacking && !SpawnedAttackBoundary)
-	{
-		FTransform Transform = GetActorTransform();
-		FRotator Rotation = Transform.Rotator();
-		FVector Translation = Transform.GetTranslation() + Rotation.RotateVector(AttackOffsetAdjustment);
-	
-		SpawnedAttackBoundary = GetWorld()->SpawnActor<AAssslashCharacterAttackBoundary>(AttackClass, Translation, Rotation);
-		if (SpawnedAttackBoundary)
-		{
-			if (IsLocallyControlled())
-			{
-				SpawnedAttackBoundary->SetIsLocal(true);
-				SpawnedAttackBoundary->OnLocalAttackBoundaryFinished.AddDynamic(this, &AAssslashCharacter::OnLocalAttackBoundaryCompleted);
-			} else
-			{
-				SpawnedAttackBoundary->OnRemoteAttackBoundaryFinished.AddDynamic(this, &AAssslashCharacter::OnRemoteAttackBoundaryCompleted);
-			}
-			
-		}
-	}
+	// if (bAttacking && !SpawnedAttackBoundary)
+	// {
+	// 	FTransform Transform = GetActorTransform();
+	// 	FRotator Rotation = Transform.Rotator();
+	// 	FVector Translation = Transform.GetTranslation() + Rotation.RotateVector(AttackOffsetAdjustment);
+	//
+	// 	SpawnedAttackBoundary = GetWorld()->SpawnActor<AAssslashCharacterAttackBoundary>(AttackClass, Translation, Rotation);
+	// 	if (SpawnedAttackBoundary)
+	// 	{
+	// 		if (IsLocallyControlled())
+	// 		{
+	// 			SpawnedAttackBoundary->SetIsLocal(true);
+	// 			SpawnedAttackBoundary->OnLocalAttackBoundaryFinished.AddDynamic(this, &AAssslashCharacter::OnLocalAttackBoundaryCompleted);
+	// 		} else
+	// 		{
+	// 			SpawnedAttackBoundary->OnRemoteAttackBoundaryFinished.AddDynamic(this, &AAssslashCharacter::OnRemoteAttackBoundaryCompleted);
+	// 		}
+	// 		
+	// 	}
+	// }
 
 	if (bAttacking || bDodging)
 	{
@@ -256,6 +277,7 @@ void AAssslashCharacter::Move(const struct FInputActionValue& InputValue)
 /** Attack :: Runs on Client */
 void AAssslashCharacter::Attack(const FInputActionValue& ActionValue)
 {
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (bDodging == 1 || bAttacking == 1) return;
 	
 	float Now = GetWorld()->GetTimeSeconds();
@@ -264,7 +286,51 @@ void AAssslashCharacter::Attack(const FInputActionValue& ActionValue)
 		ActionLastTime = Now;
 		bAttacking = 1;
 		UpdateServerAttacking(true);
+		
+		AnimInstance->Montage_Play(AttackMontage, 1.f);
 	}
+}
+
+
+void AAssslashCharacter::OnAttackHit(AActor* HitActor, FVector HitLocation)
+{
+}
+
+void AAssslashCharacter::Server_PerformAttackTrace_Implementation()
+{
+	FVector StartLocation = GetActorLocation() + GetActorRotation().RotateVector(AttackTraceOffset);
+	FVector EndLocation = StartLocation + GetActorForwardVector() * AttackTraceDistance;
+
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this); // 나는 무시하게 함.
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		StartLocation,
+		EndLocation,
+		ECC_Pawn,
+		QueryParams
+	);
+
+	#if ENABLE_DRAW_DEBUG
+		DrawDebugLine(
+		   GetWorld(),
+		   StartLocation,
+		   EndLocation,
+		   bHit ? FColor::Red : FColor::Green, // 맞았으면 빨간색, 아니면 초록색
+		   false, // Persistent (계속 유지) 여부
+		   3.0f,  // Life time (2초)
+		   0,     // Depth priority
+		   3.0f   // Thickness
+	   );
+	#endif
+
+	if (bHit)
+	{
+		OnAttackHit(HitResult.GetActor(), HitResult.Location);
+	}
+	
 }
 
 /** Attack :: Runs on Server */
@@ -285,22 +351,6 @@ void AAssslashCharacter::Switch(const FInputActionValue& ActionValue)
 {
 }
 
-void AAssslashCharacter::OnLocalAttackBoundaryCompleted()
-{
-	if (IsLocallyControlled())
-	{
-		bAttacking = false;
-		SpawnedAttackBoundary = nullptr;
-	}
-}
-
-void AAssslashCharacter::OnRemoteAttackBoundaryCompleted()
-{
-	if (!IsLocallyControlled()){
-		bAttacking = false;
-		SpawnedAttackBoundary = nullptr;
-	}
-}
 
 void AAssslashCharacter::SetEnemy(AAssslashCharacter* NewEnemy)
 {
@@ -351,7 +401,7 @@ void AAssslashCharacter::Dodge(const FInputActionValue& ActionValue)
 	float Now = GetWorld()->GetTimeSeconds();
 	if (bDodging == 1 || bAttacking == 1) return;
 	if (bDodging == 0  && Now - ActionLastTime > ActionInterval)
-	{
+	{ 
 		ActionLastTime = Now;
 		SetIsDodging(true);
 		UE_LOG(LogAssslash, Log, TEXT("Dodge : %s"), *GetName());
