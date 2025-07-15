@@ -166,7 +166,10 @@ protected:
 	float ActionInterval;
 
 	UPROPERTY(Replicated)
-	uint8 bDodging:1;
+	uint8 bDodging:1 = 0;
+
+	UPROPERTY(Replicated)
+	uint8 bIsBusy:1 = 0;
 
 private:
 	float ActionLastTime;

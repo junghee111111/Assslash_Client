@@ -280,6 +280,9 @@ void AAssslashCharacter::OnAttackHit(AActor* HitActor, FVector HitLocation)
 	AAssslashCharacter* HitCharacter = Cast<AAssslashCharacter>(HitActor);
 
 	if (!IsValid(HitCharacter)) return;
+	if (HitCharacter->bIsBusy == 1) return;
+	
+	HitCharacter->bIsBusy = 1;
 
 	// spawn HitNiagaraSystem in every client
 	if (HasAuthority()) Multicast_SpawnHitEffect(HitLocation);
@@ -287,12 +290,17 @@ void AAssslashCharacter::OnAttackHit(AActor* HitActor, FVector HitLocation)
 
 void AAssslashCharacter::Multicast_SpawnHitEffect_Implementation(FVector Loc)
 {
+	// 약간 앞으로 보냄
+	FVector NiagaraLocation = FVector(Loc.X-3, Loc.Y, Loc.Z);
+
+	bIsBusy = 1;
+	
 	if (HitNiagaraSystem)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 			GetWorld(),
 			HitNiagaraSystem,
-			Loc
+			NiagaraLocation
 			);
 	}
 }
