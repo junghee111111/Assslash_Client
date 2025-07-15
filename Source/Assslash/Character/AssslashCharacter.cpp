@@ -285,16 +285,24 @@ void AAssslashCharacter::OnAttackHit(AActor* HitActor, FVector HitLocation)
 	HitCharacter->bIsBusy = 1;
 
 	// spawn HitNiagaraSystem in every client
-	if (HasAuthority()) Multicast_SpawnHitEffect(HitLocation);
+	if (HasAuthority())
+	{
+		Multicast_SpawnHitEffect(HitLocation);
+			GetWorldTimerManager().SetTimer(
+			BusyTimerHandle,
+			HitCharacter,
+			&AAssslashCharacter::Multicast_ResetBusyState,
+			HitCharacter->ActionInterval,
+			false
+		);
+	}
 }
 
 void AAssslashCharacter::Multicast_SpawnHitEffect_Implementation(FVector Loc)
 {
 	// 약간 앞으로 보냄
-	FVector NiagaraLocation = FVector(Loc.X-3, Loc.Y, Loc.Z);
+	FVector NiagaraLocation = FVector(Loc.X-10, Loc.Y, Loc.Z);
 
-	bIsBusy = 1;
-	
 	if (HitNiagaraSystem)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -303,6 +311,13 @@ void AAssslashCharacter::Multicast_SpawnHitEffect_Implementation(FVector Loc)
 			NiagaraLocation
 			);
 	}
+
+	
+}
+
+void AAssslashCharacter::Multicast_ResetBusyState_Implementation()
+{
+	bIsBusy = 0;
 }
 
 void AAssslashCharacter::Multicast_AttackAnimPlay_Implementation()

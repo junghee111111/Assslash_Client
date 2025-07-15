@@ -170,6 +170,11 @@ protected:
 
 	UPROPERTY(Replicated)
 	uint8 bIsBusy:1 = 0;
+	
+	FTimerHandle BusyTimerHandle;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_ResetBusyState();
 
 private:
 	float ActionLastTime;
