@@ -80,7 +80,7 @@ void ABattleCam::UpdateCamPositionAndRotation(FVector SumLoc, int32 ValidPlayerC
 	FVector AvgLoc = SumLoc / ValidPlayerCount;
 	TargetLocation.X = AvgLoc.X + CamXOffset + CamXAdjust;
 	TargetLocation.Y = AvgLoc.Y + CamYOffset;
-	TargetLocation.Z = AvgLoc.Z + CamZOffset;
+	TargetLocation.Z = AvgLoc.Z + CamZOffset + 20;
 		
 	SetActorLocation(FMath::VInterpTo(GetActorLocation(), TargetLocation, DeltaTime, InterpSpeed));
 

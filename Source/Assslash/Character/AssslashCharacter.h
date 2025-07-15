@@ -152,6 +152,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	float MoveScale;
 
+	UFUNCTION(Server, Reliable)
+	void Server_SetInitialRotation();
+
+
 protected:
 	/** HUD */
 	UPROPERTY(EditAnywhere)
@@ -170,6 +174,9 @@ protected:
 
 	UPROPERTY(Replicated)
 	uint8 bIsBusy:1 = 0;
+
+	UPROPERTY(Replicated)
+	uint8 bIsLeft:1 = 0;
 	
 	FTimerHandle BusyTimerHandle;
 

@@ -74,6 +74,7 @@ void AAssslashGameMode::HandleAllPlayersReady()
 		// 서로를 Enemy로 설정 (서버에서만 실행됨)
 		Player1Char->SetEnemy(Player2Char); 
 		Player2Char->SetEnemy(Player1Char);
+		Player2Char->Server_SetInitialRotation();
 		UE_LOG(LogAssslash, Log, TEXT("[GAMEMODE] Set enemies. %s is enemy of %s, and vice versa."), *Player1Char->GetName(), *Player2Char->GetName());
 	}
 }

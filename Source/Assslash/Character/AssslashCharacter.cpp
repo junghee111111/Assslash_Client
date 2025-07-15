@@ -80,6 +80,7 @@ void AAssslashCharacter::BeginPlay()
 			GameMode->OnPlayerPawnReady.AddDynamic(this, &AAssslashCharacter::HandleNewPlayerReady);
 		}
 	}
+	
 	if (IsLocallyControlled())
 	{
 		int32 CurrentTotalPlayersNum = 0;
@@ -175,8 +176,21 @@ void AAssslashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EIC->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Dodge);
 	EIC->BindAction(SwitchAction, ETriggerEvent::Triggered, this, &AAssslashCharacter::Switch);
 	
+	
 	UE_LOG(LogAssslash, Log, TEXT("PlayerPawn SetupPlayerInputComponent Done!"));
 }
+
+void AAssslashCharacter::Server_SetInitialRotation_Implementation()
+{
+	UE_LOG(LogAssslash, Log, TEXT("[SERVER] Server_SetInitialRotation_Implementation of %s"), *GetName());
+	bIsLeft = 1;
+
+	// set rotation to 180
+	FRotator NewRotation = GetActorRotation();
+	NewRotation.Yaw += 180.f;
+	SetActorRotation(NewRotation);
+}
+
 
 void AAssslashCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -254,7 +268,7 @@ void AAssslashCharacter::Move(const struct FInputActionValue& InputValue)
 		// move right to side scroller  2d
 		const FVector RightDirection = GetActorRightVector();
 		
-		AddMovementInput(RightDirection, InputVector.X);
+		AddMovementInput(RightDirection, InputVector.X * (bIsLeft ? -1.f : 1.f));
 	}
 }
 
