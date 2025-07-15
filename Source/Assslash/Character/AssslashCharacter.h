@@ -83,6 +83,9 @@ protected:
 
 	
 protected:
+	/** Handle input to update location. */
+	void Move(const FInputActionValue& ActionValue);
+	
 	//  ========== :: Attack :: ==========
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack|Animation")
 	UAnimMontage* AttackMontage;
@@ -92,9 +95,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack")
 	FVector AttackTraceOffset;
+
+	UPROPERTY(Replicated)
+	uint8 bAttacking:1;
 	
-	/** Handle input to update location. */
-	void Move(const FInputActionValue& ActionValue);
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attack|FX")
+	class UNiagaraSystem* HitNiagaraSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attack|FX")
+	class UNiagaraSystem* HitCriticalNiagaraSystem;
 	
 	/** Handle input to start attacking. */
 	void Attack(const FInputActionValue& ActionValue);
@@ -103,17 +112,22 @@ protected:
 	void Server_PerformAttackTrace();
 
 	void OnAttackHit(AActor* HitActor, FVector HitLocation);
-
-
+	
 	UFUNCTION(Server, Reliable)
 	void UpdateServerAttacking(bool bNewAttacking);
 
-	UPROPERTY(Replicated)
-	uint8 bAttacking:1;
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_AttackAnimPlay();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SpawnHitEffect(FVector Loc);
 
 	//  ========== :: Dodge :: ==========
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack|Animation")
 	UAnimMontage* DodgeMontage;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_DodgeAnimPlay();
 
 	//  ========== :: Switch :: ==========
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack|Animation")
@@ -159,12 +173,6 @@ private:
 
 	UPROPERTY(Transient, meta = (AllowPrivateAccess = "true"))
 	AAssslashCharacterAttackBoundary* SpawnedAttackBoundary;
-	
-	UFUNCTION()
-	void OnLocalAttackBoundaryCompleted();
-
-	UFUNCTION()
-	void OnRemoteAttackBoundaryCompleted();
 
 	float MaxWalkSpeed = 500.0f;
 	
@@ -182,6 +190,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool GetIsDodging();
+	void SetIsAttacking(bool newAttacking);
 
 	UFUNCTION(BlueprintCallable)
 	void SetIsDodging(bool newDodging);
