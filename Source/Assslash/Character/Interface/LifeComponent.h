@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "LifeComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHealthChangedSignature, float, Health, float, MaxHealth, bool, isLeft);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ASSSLASH_API ULifeComponent : public UActorComponent
@@ -16,8 +17,15 @@ public:
 	// Sets default values for this component's properties
 	ULifeComponent();
 
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChangedSignature OnHealthChanged;
+
 	float GetHp() const;
 	float GetHpMax() const;
+
+	UFUNCTION()
+	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	
 
 protected:
 	// Called when the game starts
@@ -29,8 +37,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	float Hp;
 
-	UFUNCTION()
-	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 	
 
 public:

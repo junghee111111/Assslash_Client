@@ -3,6 +3,9 @@
 
 #include "LifeComponent.h"
 
+#include "Assslash/Assslash.h"
+#include "Assslash/Character/AssslashCharacter.h"
+
 
 // Sets default values for this component's properties
 ULifeComponent::ULifeComponent()
@@ -41,11 +44,20 @@ void ULifeComponent::BeginPlay()
 	
 }
 
-void ULifeComponent::TakeDamage(AActor* DamagedActor, float Damage,
-	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+void ULifeComponent::TakeDamage(
+	AActor* DamagedActor,
+	float Damage,
+	const class UDamageType* DamageType,
+	class AController* InstigatedBy,
+	AActor* DamageCauser
+	)
 {
 	if (Damage <= 0) return;
 	Hp = FMath::Clamp((Hp - Damage), 0.f, HpMax);
+
+	AAssslashCharacter* Owner = Cast<AAssslashCharacter>(GetOwner());
+	OnHealthChanged.Broadcast(Hp, HpMax, Owner->GetIsLeft());
+	// UE_LOG(LogAssslash, Error, TEXT("TakeDamage : %f, Hp : %f"), Damage, Hp);
 }
 
 

@@ -20,6 +20,7 @@
 #include "Net/UnrealNetwork.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Interface/LifeComponent.h"
 
 // Sets default values
 AAssslashCharacter::AAssslashCharacter()
@@ -90,6 +91,7 @@ void AAssslashCharacter::BeginPlay()
 		{
 			AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &AAssslashCharacter::HandleAnimNotifyBegin);
 		}
+		
 	}
 }
 
@@ -288,14 +290,32 @@ void AAssslashCharacter::Attack(const FInputActionValue& ActionValue)
 }
 
 
-void AAssslashCharacter::OnAttackHit(AActor* HitActor, FVector HitLocation)
+/**
+ * [서버에서 실행] 
+ * @param HitActor 
+ * @param HitLocation 
+ */
+void AAssslashCharacter::Server_OnAttackHit(AActor* HitActor, FVector HitLocation)
 {
 	// cast HitActor to AAsslashCharacter
 	AAssslashCharacter* HitCharacter = Cast<AAssslashCharacter>(HitActor);
-
-	if (!IsValid(HitCharacter)) return;
-	if (HitCharacter->bIsBusy == 1) return;
+	ULifeComponent* HitCharacterLifeComponent = HitCharacter->GetComponentByClass<ULifeComponent>();
 	
+
+	if (!IsValid(HitCharacter) || !IsValid(HitCharacterLifeComponent)) return;
+	if (HitCharacter->bIsBusy == 1) return;
+
+	UDamageType* DamageTypeInstance = NewObject<UDamageType>();
+	DamageTypeInstance->DamageImpulse = 10.f;
+	HitCharacterLifeComponent->TakeDamage(
+		HitCharacter,
+		10,
+		DamageTypeInstance,
+		GetController(),
+		this
+		);
+
+	PlayerHUD->SetHealth(HitCharacter->bIsLeft, HitCharacterLifeComponent->GetHp(), HitCharacterLifeComponent->GetHpMax());
 	HitCharacter->bIsBusy = 1;
 
 	// spawn HitNiagaraSystem in every client
@@ -370,7 +390,7 @@ void AAssslashCharacter::Server_PerformAttackTrace_Implementation()
 	   );
 	#endif
 
-	if (bHit) OnAttackHit(HitResult.GetActor(), HitResult.Location);
+	if (bHit) Server_OnAttackHit(HitResult.GetActor(), HitResult.Location);
 	
 }
 

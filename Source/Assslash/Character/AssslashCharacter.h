@@ -111,7 +111,7 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void Server_PerformAttackTrace();
 
-	void OnAttackHit(AActor* HitActor, FVector HitLocation);
+	void Server_OnAttackHit(AActor* HitActor, FVector HitLocation);
 	
 	UFUNCTION(Server, Reliable)
 	void UpdateServerAttacking(bool bNewAttacking);
@@ -196,6 +196,11 @@ public:
 	AAssslashCharacter* Enemy;
 	
 	void SetEnemy(AAssslashCharacter* NewEnemy);
+
+	bool GetIsLeft() const
+	{
+		return bIsLeft;
+	}
 
 	UFUNCTION(BlueprintCallable)
 	bool GetIsAttacking();
