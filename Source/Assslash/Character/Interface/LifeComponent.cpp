@@ -5,6 +5,7 @@
 
 #include "Assslash/Assslash.h"
 #include "Assslash/Character/AssslashCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values for this component's properties
@@ -42,6 +43,15 @@ void ULifeComponent::BeginPlay()
 		Owner->OnTakeAnyDamage.AddDynamic(this, &ULifeComponent::TakeDamage);
 	}
 	
+}
+
+void ULifeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ULifeComponent, Hp);
+	DOREPLIFETIME(ULifeComponent, HpMax);
+
 }
 
 void ULifeComponent::TakeDamage(

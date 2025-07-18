@@ -112,7 +112,10 @@ protected:
 	void Server_PerformAttackTrace();
 
 	void Server_OnAttackHit(AActor* HitActor, FVector HitLocation);
-	
+
+	void ShakeEnemyHpBar() const;
+	void ShakeMyHpBar() const;
+
 	UFUNCTION(Server, Reliable)
 	void UpdateServerAttacking(bool bNewAttacking);
 
@@ -120,7 +123,7 @@ protected:
 	void Multicast_AttackAnimPlay();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_SpawnHitEffect(FVector Loc);
+	void Multicast_OnPlayerHit(FVector Loc, AAssslashCharacter* HitCharacter);
 
 	//  ========== :: Dodge :: ==========
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack|Animation")
@@ -142,6 +145,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class USpringArmComponent* SpringArm;
+
+	UPROPERTY(Replicated)
+	class ULifeComponent* LifeComponent;
 
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess = "true"))
 	class UCameraComponent* Camera;

@@ -14,21 +14,33 @@
 
 void UAssslashHUD::InitWithEnemy(AAssslashCharacter* Me, AAssslashCharacter* Enemy)
 {
-
-	ULifeComponent* MyLifeComponent = Me->GetComponentByClass<ULifeComponent>();
-	ULifeComponent* EnemyLifeComponent = Enemy->GetComponentByClass<ULifeComponent>();
+	MyLifeComponent = Me->GetComponentByClass<ULifeComponent>();
+	EnemyLifeComponent = Enemy->GetComponentByClass<ULifeComponent>();
 	
 	if (MyLifeComponent && EnemyLifeComponent)
 	{
 		SetHealth(Me->GetIsLeft(), MyLifeComponent->GetHp(), MyLifeComponent->GetHpMax());
 		SetHealth(Enemy->GetIsLeft(), EnemyLifeComponent->GetHp(), EnemyLifeComponent->GetHpMax());
-		
+
+		if (Me->GetIsLeft()) bIsImLeft = true;
 		// MyLifeComponent->OnHealthChanged.AddDynamic(this, &UAssslashHUD::OnMyHealthChanged);
 		// EnemyLifeComponent->OnHealthChanged.AddDynamic(this, &UAssslashHUD::OnEnemyHealthChanged);
 		// UE_LOG(LogAssslash, Warning, TEXT("[AssslashHUD] Delegate subscription succeeded!"));
 	}
 }
 
+void UAssslashHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	if (MyLifeComponent && EnemyLifeComponent)
+	{
+		// UE_LOG(LogAssslash, Warning, TEXT("[AssslashHUD] NativeTick %f / %f"), MyLifeComponent->GetHp(), EnemyLifeComponent->GetHp());
+
+		SetHealthSmoothly(bIsImLeft, MyLifeComponent->GetHp(), MyLifeComponent->GetHpMax());
+		SetHealthSmoothly(!bIsImLeft, EnemyLifeComponent->GetHp(), EnemyLifeComponent->GetHpMax());
+	}
+}
 
 
 void UAssslashHUD::SetHealth(bool isLeft, float Health, float MaxHealth)
@@ -42,34 +54,47 @@ void UAssslashHUD::SetHealth(bool isLeft, float Health, float MaxHealth)
 	}
 }
 
-void UAssslashHUD::SetHealthLeft(float Health, float MaxHealth) const
+void UAssslashHUD::SetHealthSmoothly(bool isLeft, float Health, float MaxHealth)
+{
+	if (isLeft)
+	{
+		float DisplayHealth = FMath::Lerp(HealthLeft, Health, 0.05f);
+		SetHealthLeft(DisplayHealth, MaxHealth);
+	} else
+	{
+		float DisplayHealth = FMath::Lerp(HealthRight, Health, 0.05f);
+		SetHealthRight(DisplayHealth, MaxHealth);
+	}
+}
+
+void UAssslashHUD::SetHealthLeft(float Health, float MaxHealth)
 {
 	if (LtHealthBar)
 	{
-		LtHealthBar->SetPercent(Health / MaxHealth);
-		Text_Hp_Lt->SetText(FText::AsNumber(Health));
+		HealthLeft = Health;
+		LtHealthBar->SetPercent(HealthLeft / MaxHealth);
+		Text_Hp_Lt->SetText(FText::AsNumber(static_cast<uint32>(HealthLeft)));
 	}
 }
 
-void UAssslashHUD::SetHealthRight(float Health, float MaxHealth) const
+void UAssslashHUD::SetHealthRight(float Health, float MaxHealth)
 {
 	if (RtHealthBar)
 	{
-		RtHealthBar->SetPercent(Health / MaxHealth);
-		Text_Hp_Rt->SetText(FText::AsNumber(Health));
+		HealthRight = Health;
+		RtHealthBar->SetPercent(HealthRight / MaxHealth);
+		Text_Hp_Rt->SetText(FText::AsNumber(static_cast<uint32>(HealthRight)));
 	}
 }
 
-void UAssslashHUD::OnMyHealthChanged(float Health, float MaxHealth, bool IsLeft)
+void UAssslashHUD::PlayShakeLeft()
 {
-	UE_LOG(LogAssslash, Warning, TEXT("[AssslashHUD] OnMyHealthChanged : %f"), Health);
-	SetHealth(IsLeft, Health, MaxHealth);
+	PlayAnimation(ShakeLeft);
 }
 
-void UAssslashHUD::OnEnemyHealthChanged(float Health, float MaxHealth, bool IsLeft)
+void UAssslashHUD::PlayShakeRight()
 {
-	UE_LOG(LogAssslash, Warning, TEXT("[AssslashHUD] OnEnemyHealthChanged : %f"), Health)
-	SetHealth(IsLeft, Health, MaxHealth);
+	PlayAnimation(ShakeRight);
 }
 
 float UAssslashHUD::GetHealthRight()

@@ -16,6 +16,8 @@ AAssslashGameMode::AAssslashGameMode()
 	DefaultPawnClass = AAssslashCharacter::StaticClass();
 }
 
+
+
 void AAssslashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);

@@ -21,7 +21,7 @@ class ASSSLASH_API AAssslashGameMode : public AGameModeBase
 	
 public:
 	AAssslashGameMode();
-
+	
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
 

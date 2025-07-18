@@ -67,6 +67,16 @@ AAssslashCharacter::AAssslashCharacter()
 	this->GetCapsuleComponent()->SetConstraintMode(EDOFMode::Type::YZPlane);
 }
 
+// ========== Replication ==========
+void AAssslashCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AAssslashCharacter, bAttacking, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(AAssslashCharacter, bDodging, COND_SimulatedOnly);
+	DOREPLIFETIME(AAssslashCharacter, Enemy);
+	DOREPLIFETIME(AAssslashCharacter, LifeComponent);
+}
+
 // Called when the game starts or when spawned
 void AAssslashCharacter::BeginPlay()
 {
@@ -94,8 +104,6 @@ void AAssslashCharacter::BeginPlay()
 		
 	}
 }
-
-
 
 void AAssslashCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
@@ -193,15 +201,6 @@ void AAssslashCharacter::Server_SetInitialRotation_Implementation()
 	SetActorRotation(NewRotation);
 }
 
-
-void AAssslashCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(AAssslashCharacter, bAttacking, COND_SimulatedOnly);
-	DOREPLIFETIME_CONDITION(AAssslashCharacter, bDodging, COND_SimulatedOnly);
-	DOREPLIFETIME(AAssslashCharacter, Enemy);
-}
-
 void AAssslashCharacter::ShowHUD(AAssslashPlayerController* APC)
 {
 	PlayerHUD = CreateWidget<UAssslashHUD>(APC, PlayerHUDClass);
@@ -223,7 +222,6 @@ void AAssslashCharacter::Multicast_DisplayHUD_Implementation()
 		UE_LOG(LogAssslash, Error, TEXT("[MC:%s] Not locally controlled, skipping HUD creation."), *GetName());
 		return; 
 	}
-    
 	AAssslashPlayerController* APC = GetController<AAssslashPlayerController>();
 	if (APC && PlayerHUDClass && PlayerHUD == nullptr)
 	{
@@ -242,7 +240,6 @@ void AAssslashCharacter::Multicast_DisplayHUD_Implementation()
 	{
 		UE_LOG(LogAssslash, Error, TEXT("[MC:%s] PlayerHUDClass is not set! Please assign it in Blueprint."), *GetName());
 	}
-	
 }
 
 
@@ -307,6 +304,7 @@ void AAssslashCharacter::Server_OnAttackHit(AActor* HitActor, FVector HitLocatio
 
 	UDamageType* DamageTypeInstance = NewObject<UDamageType>();
 	DamageTypeInstance->DamageImpulse = 10.f;
+	
 	HitCharacterLifeComponent->TakeDamage(
 		HitCharacter,
 		10,
@@ -315,14 +313,14 @@ void AAssslashCharacter::Server_OnAttackHit(AActor* HitActor, FVector HitLocatio
 		this
 		);
 
-	PlayerHUD->SetHealth(HitCharacter->bIsLeft, HitCharacterLifeComponent->GetHp(), HitCharacterLifeComponent->GetHpMax());
+	// PlayerHUD->SetHealth(HitCharacter->bIsLeft, HitCharacterLifeComponent->GetHp(), HitCharacterLifeComponent->GetHpMax());
 	HitCharacter->bIsBusy = 1;
 
 	// spawn HitNiagaraSystem in every client
 	if (HasAuthority())
 	{
-		Multicast_SpawnHitEffect(HitLocation);
-			GetWorldTimerManager().SetTimer(
+		Multicast_OnPlayerHit(HitLocation, HitCharacter);
+		GetWorldTimerManager().SetTimer(
 			BusyTimerHandle,
 			HitCharacter,
 			&AAssslashCharacter::Multicast_ResetBusyState,
@@ -332,7 +330,11 @@ void AAssslashCharacter::Server_OnAttackHit(AActor* HitActor, FVector HitLocatio
 	}
 }
 
-void AAssslashCharacter::Multicast_SpawnHitEffect_Implementation(FVector Loc)
+/**
+ * 내가 누군가를 때렸을 때 나한테 발생하는 Multicast
+ * @param Loc 때린 위치
+ */
+void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(FVector Loc, AAssslashCharacter* HitCharacter)
 {
 	// 약간 앞으로 보냄
 	FVector NiagaraLocation = FVector(Loc.X-10, Loc.Y, Loc.Z);
@@ -346,7 +348,43 @@ void AAssslashCharacter::Multicast_SpawnHitEffect_Implementation(FVector Loc)
 			);
 	}
 
+	if (!HasAuthority())
+	{
+		if (IsLocallyControlled())
+		{
+			// 내가 때린거임
+			ShakeEnemyHpBar();
+		} else
+		{
+			// 내가 맞은거임
+			Enemy->ShakeMyHpBar();
+		}
+	}
 	
+}
+
+void AAssslashCharacter::ShakeEnemyHpBar() const
+{
+	if (!PlayerHUD) return;
+	if (bIsLeft)
+	{
+		PlayerHUD->PlayShakeRight();
+	} else
+	{
+		PlayerHUD->PlayShakeLeft();
+	}
+}
+
+void AAssslashCharacter::ShakeMyHpBar() const
+{
+	if (!PlayerHUD) return;
+	if (bIsLeft)
+	{
+		PlayerHUD->PlayShakeLeft();
+	} else
+	{
+		PlayerHUD->PlayShakeRight();
+	}
 }
 
 void AAssslashCharacter::Multicast_ResetBusyState_Implementation()
@@ -384,7 +422,7 @@ void AAssslashCharacter::Server_PerformAttackTrace_Implementation()
 		   EndLocation,
 		   bHit ? FColor::Red : FColor::Green, // 맞았으면 빨간색, 아니면 초록색
 		   false, // Persistent (계속 유지) 여부
-		   3.0f,  // Life time (2초)
+		   3.0f,  // Lifetime
 		   0,     // Depth priority
 		   3.0f   // Thickness
 	   );

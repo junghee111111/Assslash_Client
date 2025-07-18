@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Assslash/Character/AssslashCharacter.h"
+#include "Assslash/Character/Interface/LifeComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "AssslashHUD.generated.h"
 
@@ -14,18 +15,30 @@ public:
 private:
 	GENERATED_BODY()
 
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+protected:
+	// ========== Animations ==========
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidgetAnim), Transient)
+	class UWidgetAnimation* ShakeRight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidgetAnim), Transient)
+	class UWidgetAnimation* ShakeLeft;
+	
 public:
 	void SetHealth(bool isLeft, float Health, float MaxHealth);
 
-	void SetHealthLeft(float Health, float MaxHealth) const;
+	void SetHealthSmoothly(bool isLeft, float Health, float MaxHealth);
 
-	void SetHealthRight(float Health, float MaxHealth) const;
+	void SetHealthLeft(float Health, float MaxHealth);
 
-	UFUNCTION()
-	void OnMyHealthChanged(float Health, float MaxHealth, bool IsLeft);
+	void SetHealthRight(float Health, float MaxHealth);
 
-	UFUNCTION()
-	void OnEnemyHealthChanged(float Health, float MaxHealth, bool IsLeft);
+	UFUNCTION(BlueprintCallable)
+	void PlayShakeLeft();
+
+	UFUNCTION(BlueprintCallable)
+	void PlayShakeRight();
 	
 	UFUNCTION(BlueprintCallable)
 	float GetHealthLeft();
@@ -55,7 +68,19 @@ public:
 	
 
 private:
+	UPROPERTY()
 	float HealthLeft;
+
+	UPROPERTY()
 	float HealthRight;
+
+	UPROPERTY()
+	bool bIsImLeft = false;
+
+	UPROPERTY()
+	ULifeComponent* MyLifeComponent = nullptr;
+	
+	UPROPERTY()
+	ULifeComponent* EnemyLifeComponent = nullptr;
 	
 };
