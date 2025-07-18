@@ -288,7 +288,7 @@ void AAssslashCharacter::Attack(const FInputActionValue& ActionValue)
 
 
 /**
- * [서버에서 실행] 
+ * [서버에서 실행] 플레이어의 공격 ray cast에 맞았으면 실행
  * @param HitActor 
  * @param HitLocation 
  */
@@ -301,6 +301,8 @@ void AAssslashCharacter::Server_OnAttackHit(AActor* HitActor, FVector HitLocatio
 
 	if (!IsValid(HitCharacter) || !IsValid(HitCharacterLifeComponent)) return;
 	if (HitCharacter->bIsBusy == 1) return;
+
+	UE_LOG(LogAssslash, Log, TEXT("[SERVER] HitCharacter : %s"), *HitCharacter->GetName());
 
 	UDamageType* DamageTypeInstance = NewObject<UDamageType>();
 	DamageTypeInstance->DamageImpulse = 10.f;
@@ -330,6 +332,31 @@ void AAssslashCharacter::Server_OnAttackHit(AActor* HitActor, FVector HitLocatio
 	}
 }
 
+
+/**
+ * [서버에서 실행] 플레이어의 공격 ray cast에 맞았으나 상대가 회피중일 때
+ * @param HitActor 
+ * @param HitLocation 
+ */
+void AAssslashCharacter::Server_OnAttackMiss(AActor* HitActor, FVector HitLocation)
+{
+	// cast HitActor to AAsslashCharacter
+	AAssslashCharacter* HitCharacter = Cast<AAssslashCharacter>(HitActor);
+	ULifeComponent* HitCharacterLifeComponent = HitCharacter->GetComponentByClass<ULifeComponent>();
+	
+
+	if (!IsValid(HitCharacter) || !IsValid(HitCharacterLifeComponent)) return;
+
+	UE_LOG(LogAssslash, Log, TEXT("[SERVER] Miss Character : %s"), *HitCharacter->GetName());
+
+	// spawn HitNiagaraSystem in every client
+	if (HasAuthority())
+	{
+		//Multicast_OnPlayerHit(HitLocation, HitCharacter);
+	}
+}
+
+
 /**
  * 내가 누군가를 때렸을 때 나한테 발생하는 Multicast
  * @param Loc 때린 위치
@@ -346,6 +373,8 @@ void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(FVector Loc, AAsss
 			HitNiagaraSystem,
 			NiagaraLocation
 			);
+
+		GetWorld()->SpawnActor(BP_DamageIndicator);
 	}
 
 	if (!HasAuthority())
@@ -428,7 +457,25 @@ void AAssslashCharacter::Server_PerformAttackTrace_Implementation()
 	   );
 	#endif
 
-	if (bHit) Server_OnAttackHit(HitResult.GetActor(), HitResult.Location);
+	AActor* HitActor = HitResult.GetActor();
+	if (HitActor)
+	{
+		AAssslashCharacter* HitCharacter = Cast<AAssslashCharacter>(HitActor);
+		check(HitCharacter);
+
+		
+		if (bHit)
+		{
+			if (HitCharacter->bDodging)
+			{
+				Server_OnAttackMiss(HitActor, HitResult.Location);
+			} else
+			{
+				Server_OnAttackHit(HitActor, HitResult.Location);
+			}
+		}
+	}
+	
 	
 }
 

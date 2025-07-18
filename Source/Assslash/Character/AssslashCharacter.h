@@ -19,26 +19,26 @@ class ASSSLASH_API AAssslashCharacter : public ACharacter
 	GENERATED_BODY()
 	
 protected:
-	// inputs
-	UPROPERTY(EditAnywhere, Category="Enhanced Input")
+	// ========== inputs ==========
+	UPROPERTY(EditAnywhere, Category="Assslash|Enhanced Input")
 	class UInputMappingContext* InputMapping;
 
-	UPROPERTY(EditAnywhere, Category="Enhanced Input")
+	UPROPERTY(EditAnywhere, Category="Assslash|Enhanced Input")
 	class UInputAction* MoveAction;
 	
-	UPROPERTY(EditAnywhere, Category="Enhanced Input")
+	UPROPERTY(EditAnywhere, Category="Assslash|Enhanced Input")
 	class UInputAction* AttackAction;
 
-	UPROPERTY(EditAnywhere, Category="Enhanced Input")
+	UPROPERTY(EditAnywhere, Category="Assslash|Enhanced Input")
 	class UInputAction* DodgeAction;
 
-	UPROPERTY(EditAnywhere, Category="Enhanced Input")
+	UPROPERTY(EditAnywhere, Category="Assslash|Enhanced Input")
 	class UInputAction* SwitchAction;
 
-	UPROPERTY(EditAnywhere, Category="Assslash Attack")
+	UPROPERTY(EditAnywhere, Category="Assslash|Attack")
 	FVector AttackOffsetAdjustment;
 
-	UPROPERTY(EditAnywhere, Category="Assslash Attack")
+	UPROPERTY(EditAnywhere, Category="Assslash|Attack")
 	TSubclassOf<class AAssslashCharacterAttackBoundary> AttackClass;
 
 public:
@@ -111,6 +111,8 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void Server_PerformAttackTrace();
 
+	void Server_OnAttackMiss(AActor* HitActor, FVector HitLocation);
+
 	void Server_OnAttackHit(AActor* HitActor, FVector HitLocation);
 
 	void ShakeEnemyHpBar() const;
@@ -161,6 +163,15 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_SetInitialRotation();
 
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Assslash|UI")
+	UBlueprint* BP_DamageIndicator = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Assslash|UI")
+	UBlueprint* BP_DamageIndicator_Critical = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Assslash|UI")
+	UBlueprint* BP_InfoIndicator = nullptr;
+
 
 protected:
 	/** HUD */
@@ -172,7 +183,7 @@ protected:
 
 	/** Behaviours */
 
-	UPROPERTY(EditAnywhere, Category="Assslash Attack")
+	UPROPERTY(EditAnywhere, Category="Assslash|Attack")
 	float ActionInterval;
 
 	UPROPERTY(Replicated)
@@ -188,6 +199,7 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_ResetBusyState();
+	
 
 private:
 	float ActionLastTime;
@@ -196,6 +208,7 @@ private:
 	AAssslashCharacterAttackBoundary* SpawnedAttackBoundary;
 
 	float MaxWalkSpeed = 500.0f;
+	
 	
 public:
 	UPROPERTY(Replicated)
