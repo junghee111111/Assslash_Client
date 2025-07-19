@@ -4,7 +4,6 @@
 #include "AssslashCharacter.h"
 
 #include "AssslashPlayerController.h"
-#include "EngineUtils.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Assslash/Assslash.h"
@@ -365,6 +364,7 @@ void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(FVector Loc, AAsss
 {
 	// 약간 앞으로 보냄
 	FVector NiagaraLocation = FVector(Loc.X-10, Loc.Y, Loc.Z);
+	FVector DamageIndicatorLocation = FVector(Loc.X, Loc.Y, Loc.Z-70);
 
 	if (HitNiagaraSystem)
 	{
@@ -373,8 +373,24 @@ void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(FVector Loc, AAsss
 			HitNiagaraSystem,
 			NiagaraLocation
 			);
+	}
 
-		GetWorld()->SpawnActor(BP_DamageIndicator);
+	// spawn actor BP_DamageIndicator at hit location
+	if (BP_DamageIndicator)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		
+		
+		AActor* DamageIndicator = GetWorld()->SpawnActor<AActor>(
+			BP_DamageIndicator,
+			DamageIndicatorLocation,
+			FRotator::ZeroRotator,
+			SpawnParams
+		);
+
+		UE_LOG(LogAssslash, Log, TEXT("[MC:%s] Spawn BP_DamageIndicator at %f %f %f"), *GetName(), Loc.X, Loc.Y, Loc.Z);
 	}
 
 	if (!HasAuthority())

@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
-#include "Assslash/Assslash.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/Actor.h"
 #include "AssslashPlayerController.h"
+#include "Assslash/UI/Indicator/InfoIndicator.h"
 #include "AssslashCharacter.generated.h"
 
 class UAnimMontage;
@@ -34,6 +34,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category="Assslash|Enhanced Input")
 	class UInputAction* SwitchAction;
+
+	UPROPERTY(EditAnywhere, Category="Assslash|UI")
+	TSubclassOf<class AInfoIndicator> BP_DamageIndicator;
+
+	UPROPERTY(EditAnywhere, Category="Assslash|UI")
+	TSubclassOf<class AInfoIndicator> BP_DamageIndicator_Critical;
+
+	UPROPERTY(EditAnywhere, Category="Assslash|UI")
+	TSubclassOf<class AInfoIndicator> BP_InfoIndicator;
 
 	UPROPERTY(EditAnywhere, Category="Assslash|Attack")
 	FVector AttackOffsetAdjustment;
@@ -162,16 +171,6 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void Server_SetInitialRotation();
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Assslash|UI")
-	UBlueprint* BP_DamageIndicator = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Assslash|UI")
-	UBlueprint* BP_DamageIndicator_Critical = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Assslash|UI")
-	UBlueprint* BP_InfoIndicator = nullptr;
-
 
 protected:
 	/** HUD */
