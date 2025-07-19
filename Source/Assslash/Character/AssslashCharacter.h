@@ -123,6 +123,8 @@ protected:
 	void Server_PerformAttackTrace();
 
 	void Server_OnAttackMiss(AActor* HitActor, FVector HitLocation);
+	void SpawnHitEffects(const FVector& HitLocation);
+	void HandleHitFeedback(AAssslashCharacter* HitCharacter);
 
 	void Server_OnAttackHit(AActor* HitActor, FVector HitLocation);
 

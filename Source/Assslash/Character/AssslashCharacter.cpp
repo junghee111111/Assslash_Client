@@ -360,52 +360,64 @@ void AAssslashCharacter::Server_OnAttackMiss(AActor* HitActor, FVector HitLocati
  * 내가 누군가를 때렸을 때 나한테 발생하는 Multicast
  * @param Loc 때린 위치
  */
-void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(FVector Loc, AAssslashCharacter* HitCharacter)
+void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(FVector HitLocation, AAssslashCharacter* HitCharacter)
 {
-	// 약간 앞으로 보냄
-	FVector NiagaraLocation = FVector(Loc.X-10, Loc.Y, Loc.Z);
-	FVector DamageIndicatorLocation = FVector(Loc.X, Loc.Y, Loc.Z-70);
+    SpawnHitEffects(HitLocation);
+    HandleHitFeedback(HitCharacter);
+}
 
-	if (HitNiagaraSystem)
-	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-			GetWorld(),
-			HitNiagaraSystem,
-			NiagaraLocation
-			);
-	}
+void AAssslashCharacter::SpawnHitEffects(const FVector& HitLocation)
+{
+    constexpr float kNiagaraXOffset = -10.0f;
+    constexpr float kDamageIndicatorZOffset = -70.0f;
+    
+    FVector NiagaraLocation = FVector(HitLocation.X + kNiagaraXOffset, HitLocation.Y, HitLocation.Z);
+    FVector DamageIndicatorLocation = FVector(HitLocation.X, HitLocation.Y, HitLocation.Z + kDamageIndicatorZOffset);
 
-	// spawn actor BP_DamageIndicator at hit location
-	if (BP_DamageIndicator)
-	{
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    // Spawn hit VFX
+    if (HitNiagaraSystem)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            HitNiagaraSystem,
+            NiagaraLocation
+        );
+    }
 
-		
-		
-		AActor* DamageIndicator = GetWorld()->SpawnActor<AActor>(
-			BP_DamageIndicator,
-			DamageIndicatorLocation,
-			FRotator::ZeroRotator,
-			SpawnParams
-		);
+    // Spawn damage indicator
+    if (BP_DamageIndicator)
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        
+        AActor* DamageIndicator = GetWorld()->SpawnActor<AActor>(
+            BP_DamageIndicator,
+            DamageIndicatorLocation,
+            FRotator::ZeroRotator,
+            SpawnParams
+        );
 
-		UE_LOG(LogAssslash, Log, TEXT("[MC:%s] Spawn BP_DamageIndicator at %f %f %f"), *GetName(), Loc.X, Loc.Y, Loc.Z);
-	}
+        UE_LOG(LogAssslash, Log, TEXT("[MC:%s] Spawn BP_DamageIndicator at %f %f %f"), 
+            *GetName(), HitLocation.X, HitLocation.Y, HitLocation.Z);
+    }
+}
 
-	if (!HasAuthority())
-	{
-		if (IsLocallyControlled())
-		{
-			// 내가 때린거임
-			ShakeEnemyHpBar();
-		} else
-		{
-			// 내가 맞은거임
-			Enemy->ShakeMyHpBar();
-			Enemy->ShowHitBG();
-		}
-	}
+void AAssslashCharacter::HandleHitFeedback(AAssslashCharacter* HitCharacter)
+{
+    if (!HasAuthority())
+    {
+        if (IsLocallyControlled())
+        {
+            // This client hit someone else
+            ShakeEnemyHpBar();
+        }
+        else
+        {
+            // This client was hit by someone
+            Enemy->ShakeMyHpBar();
+            Enemy->ShowHitBG();
+        }
+    }
 }
 
 void AAssslashCharacter::ShowHitBG() const
