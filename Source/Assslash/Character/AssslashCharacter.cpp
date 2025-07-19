@@ -403,9 +403,15 @@ void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(FVector Loc, AAsss
 		{
 			// 내가 맞은거임
 			Enemy->ShakeMyHpBar();
+			Enemy->ShowHitBG();
 		}
 	}
-	
+}
+
+void AAssslashCharacter::ShowHitBG() const
+{
+	if (!PlayerHUD) return;
+	PlayerHUD->PlayerShowHitBG();
 }
 
 void AAssslashCharacter::ShakeEnemyHpBar() const
@@ -418,6 +424,10 @@ void AAssslashCharacter::ShakeEnemyHpBar() const
 	{
 		PlayerHUD->PlayShakeLeft();
 	}
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		PC->ClientStartCameraShake(HitCameraShakeClass, 1.0f);
+	}
 }
 
 void AAssslashCharacter::ShakeMyHpBar() const
@@ -429,6 +439,10 @@ void AAssslashCharacter::ShakeMyHpBar() const
 	} else
 	{
 		PlayerHUD->PlayShakeRight();
+	}
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		PC->ClientStartCameraShake(HitCameraShakeClass, 1.0f);
 	}
 }
 

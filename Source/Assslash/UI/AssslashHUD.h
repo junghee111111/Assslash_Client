@@ -24,6 +24,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidgetAnim), Transient)
 	class UWidgetAnimation* ShakeLeft;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidgetAnim), Transient)
+	class UWidgetAnimation* ShowHitBG;
 	
 public:
 	void SetHealth(bool isLeft, float Health, float MaxHealth);
@@ -39,7 +42,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void PlayShakeRight();
-	
+	void PlayerShowHitBG();
+
 	UFUNCTION(BlueprintCallable)
 	float GetHealthLeft();
 

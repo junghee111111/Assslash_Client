@@ -97,6 +97,11 @@ void UAssslashHUD::PlayShakeRight()
 	PlayAnimation(ShakeRight);
 }
 
+void UAssslashHUD::PlayerShowHitBG()
+{
+	PlayAnimation(ShowHitBG);
+}
+
 float UAssslashHUD::GetHealthRight()
 {
 	return HealthRight;

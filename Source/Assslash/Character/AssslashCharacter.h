@@ -113,8 +113,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attack|FX")
 	class UNiagaraSystem* HitCriticalNiagaraSystem;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	TSubclassOf<UCameraShakeBase> HitCameraShakeClass;
 	
-	/** Handle input to start attacking. */
 	void Attack(const FInputActionValue& ActionValue);
 
 	UFUNCTION(Server, Reliable)
@@ -124,6 +126,7 @@ protected:
 
 	void Server_OnAttackHit(AActor* HitActor, FVector HitLocation);
 
+	void ShowHitBG() const;
 	void ShakeEnemyHpBar() const;
 	void ShakeMyHpBar() const;
 
