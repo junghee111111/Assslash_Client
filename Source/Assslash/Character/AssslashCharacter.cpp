@@ -20,6 +20,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Interface/LifeComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AAssslashCharacter::AAssslashCharacter()
@@ -131,7 +132,6 @@ void AAssslashCharacter::HandleAnimNotifyBegin(FName NotifyName,
 		SetIsDodging(false);
 	}
 }
-
 
 // Called every frame
 void AAssslashCharacter::Tick(float DeltaTime)
@@ -364,6 +364,7 @@ void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(FVector HitLocatio
 {
     SpawnHitEffects(HitLocation);
     HandleHitFeedback(HitCharacter);
+	Server_SetWorldTimeScale(0.4f, 0.15f);
 }
 
 void AAssslashCharacter::SpawnHitEffects(const FVector& HitLocation)
@@ -456,6 +457,31 @@ void AAssslashCharacter::ShakeMyHpBar() const
 	{
 		PC->ClientStartCameraShake(HitCameraShakeClass, 1.0f);
 	}
+}
+
+// ========== 맞았을 때 world time scale 조정 ==========
+
+void AAssslashCharacter::Server_SetWorldTimeScale_Implementation(float TimeScale, float ResetTime)
+{
+	Multicast_SetWorldTimeScale(TimeScale, ResetTime);
+}
+
+void AAssslashCharacter::Multicast_SetWorldTimeScale_Implementation(float TimeScale, float ResetTime)
+{
+	// 서버와 모든 클라이언트에서 실행
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeScale);
+    
+	// 일정 시간 후 원래 속도로 복원
+	FTimerHandle TimerHandle_ResetTimeDilation;
+	GetWorldTimerManager().SetTimer(
+		TimerHandle_ResetTimeDilation, 
+		[this]()
+		{
+			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+		}, 
+		ResetTime * UGameplayStatics::GetGlobalTimeDilation(GetWorld()), 
+		false
+	);
 }
 
 void AAssslashCharacter::Multicast_ResetBusyState_Implementation()

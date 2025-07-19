@@ -141,6 +141,12 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnPlayerHit(FVector Loc, AAssslashCharacter* HitCharacter);
 
+	UFUNCTION(Server, Reliable)
+	void Server_SetWorldTimeScale(float TimeScale, float ResetTime);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SetWorldTimeScale(float TimeScale, float ResetTime);
+
 	//  ========== :: Dodge :: ==========
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack|Animation")
 	UAnimMontage* DodgeMontage;
