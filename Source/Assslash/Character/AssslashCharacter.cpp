@@ -73,9 +73,13 @@ void AAssslashCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(AAssslashCharacter, bAttacking, COND_SimulatedOnly);
 	DOREPLIFETIME_CONDITION(AAssslashCharacter, bDodging, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(AAssslashCharacter, bIsBusy, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(AAssslashCharacter, bIsDead, COND_SimulatedOnly);
 	DOREPLIFETIME(AAssslashCharacter, Enemy);
 	DOREPLIFETIME(AAssslashCharacter, LifeComponent);
+
 }
+
 
 // Called when the game starts or when spawned
 void AAssslashCharacter::BeginPlay()
@@ -133,17 +137,26 @@ void AAssslashCharacter::HandleAnimNotifyBegin(FName NotifyName,
 	}
 }
 
+void AAssslashCharacter::Multicast_PlayerDead_Implementation(AAssslashCharacter* DeadCharacter)
+{
+	DeadCharacter->GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	DeadCharacter->GetMesh()->SetSimulatePhysics(true);
+	DeadCharacter->GetMesh()->AddImpulse(StoredImpulse * 10,NAME_None, true);
+	DeadCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
 // Called every frame
 void AAssslashCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 
+	// PlayerHUD 초기화 시점을 잡기 어려워서 Tick 에 넣었으니 다른 곳으로 빼지 마세요.
 	if (PlayerHUD == nullptr && IsValid(Enemy) && IsLocallyControlled() && PlayerHUDClass)
 	{
 		ShowHUD(GetController<AAssslashPlayerController>());
 	}
-
+	
 	if (bAttacking || bDodging)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 0.f;
@@ -153,6 +166,11 @@ void AAssslashCharacter::Tick(float DeltaTime)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 		}
+	}
+
+	if (bIsDead)
+	{
+		GetCharacterMovement()->DisableMovement();
 	}
 }
 
@@ -304,11 +322,11 @@ void AAssslashCharacter::Server_OnAttackHit(AActor* HitActor, FVector HitLocatio
 	UE_LOG(LogAssslash, Log, TEXT("[SERVER] HitCharacter : %s"), *HitCharacter->GetName());
 
 	UDamageType* DamageTypeInstance = NewObject<UDamageType>();
-	DamageTypeInstance->DamageImpulse = 10.f;
+	DamageTypeInstance->DamageImpulse =30.f;
 	
 	HitCharacterLifeComponent->TakeDamage(
 		HitCharacter,
-		10,
+		30,
 		DamageTypeInstance,
 		GetController(),
 		this
@@ -317,10 +335,17 @@ void AAssslashCharacter::Server_OnAttackHit(AActor* HitActor, FVector HitLocatio
 	// PlayerHUD->SetHealth(HitCharacter->bIsLeft, HitCharacterLifeComponent->GetHp(), HitCharacterLifeComponent->GetHpMax());
 	HitCharacter->bIsBusy = 1;
 
+	if (HitCharacterLifeComponent->GetHp() <= 0)
+	{
+		// 죽음 처리
+		HitCharacter->bIsDead = 1;
+		Multicast_PlayerDead(HitCharacter);
+	}
+
 	// spawn HitNiagaraSystem in every client
 	if (HasAuthority())
 	{
-		Multicast_OnPlayerHit(HitLocation, HitCharacter);
+		Multicast_OnPlayerHit(HitLocation, HitCharacter, HitCharacter->bIsDead);
 		GetWorldTimerManager().SetTimer(
 			BusyTimerHandle,
 			HitCharacter,
@@ -351,8 +376,14 @@ void AAssslashCharacter::Server_OnAttackMiss(AActor* HitActor, FVector HitLocati
 	// spawn HitNiagaraSystem in every client
 	if (HasAuthority())
 	{
-		//Multicast_OnPlayerHit(HitLocation, HitCharacter);
+		Multicast_OnPlayerDodge(HitLocation, HitCharacter);
 	}
+}
+
+
+void AAssslashCharacter::Multicast_OnPlayerDodge_Implementation(FVector Loc, AAssslashCharacter* HitCharacter)
+{
+	HandleMissFeedback(HitCharacter, Loc);
 }
 
 
@@ -360,32 +391,42 @@ void AAssslashCharacter::Server_OnAttackMiss(AActor* HitActor, FVector HitLocati
  * 내가 누군가를 때렸을 때 나한테 발생하는 Multicast
  * @param Loc 때린 위치
  */
-void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(FVector HitLocation, AAssslashCharacter* HitCharacter)
+void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(
+	FVector HitLocation, AAssslashCharacter* HitCharacter, uint8 IsDead)
 {
-    SpawnHitEffects(HitLocation);
+    SpawnHitEffects(HitCharacter, HitLocation);
     HandleHitFeedback(HitCharacter);
-	Server_SetWorldTimeScale(0.4f, 0.15f);
+	if (IsDead == 1)
+	{
+		Server_SetWorldTimeScale(0.2f, 3.f);
+	} else
+	{
+		Server_SetWorldTimeScale(0.4f, 0.3f);
+	}
+	
 
 	if (HitCharacter)
 	{
 		FVector LaunchDirection = HitCharacter->GetActorLocation() - GetActorLocation();
 		LaunchDirection.Normalize();
-		LaunchDirection.Z += 0.5f;
+		LaunchDirection.Z += 0.6f;
 		LaunchDirection.Normalize();
 
 		float LaunchStrength = 500.f;
+		StoredImpulse = LaunchDirection*LaunchStrength;
 
 		HitCharacter->LaunchCharacter(LaunchDirection*LaunchStrength, true, true);
 	}
 }
 
-void AAssslashCharacter::SpawnHitEffects(const FVector& HitLocation)
+void AAssslashCharacter::SpawnHitEffects(AAssslashCharacter* HitCharacter, const FVector& HitLocation)
 {
     constexpr float kNiagaraXOffset = -10.0f;
     constexpr float kDamageIndicatorZOffset = -70.0f;
+	float DamageIndicatorYOffset = HitCharacter->bIsLeft ? -100.0f : 100.0f;
     
     FVector NiagaraLocation = FVector(HitLocation.X + kNiagaraXOffset, HitLocation.Y, HitLocation.Z);
-    FVector DamageIndicatorLocation = FVector(HitLocation.X, HitLocation.Y, HitLocation.Z + kDamageIndicatorZOffset);
+    FVector DamageIndicatorLocation = FVector(HitLocation.X, HitLocation.Y + DamageIndicatorYOffset, HitLocation.Z + kDamageIndicatorZOffset);
 
     // Spawn hit VFX
     if (HitNiagaraSystem)
@@ -414,22 +455,59 @@ void AAssslashCharacter::SpawnHitEffects(const FVector& HitLocation)
 	
 
     // Spawn damage indicator
-    if (BP_DamageIndicator)
+    if (BP_DamageIndicator && BP_DamageIndicator_Critical)
     {
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    	if (HitCharacter->bAttacking==1)
+    	{
+    		// Counter Attack
+    		float CounterAttackIndicatorYOffset = HitCharacter->bIsLeft ? 110.0f : -110.0f;
+    		float CounterAttackIndicatorZOffset = 60;
+    		FVector CounterAttackIndicatorPos = FVector(HitLocation.X,
+    			HitLocation.Y + CounterAttackIndicatorYOffset,
+    			HitLocation.Z + CounterAttackIndicatorZOffset);
+		
+    		FActorSpawnParameters CounterAttackSpawnParams;
+    		CounterAttackSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        
+    		AActor* CounterAttackIndicator = GetWorld()->SpawnActor<AActor>(
+				BP_Counter_Attack_Indicator,
+				CounterAttackIndicatorPos,
+				FRotator::ZeroRotator,
+				CounterAttackSpawnParams
+			);
+    	}
         
         AActor* DamageIndicator = GetWorld()->SpawnActor<AActor>(
-            BP_DamageIndicator,
+            (HitCharacter->bAttacking==1 ? BP_DamageIndicator_Critical : BP_DamageIndicator),
             DamageIndicatorLocation,
             FRotator::ZeroRotator,
             SpawnParams
         );
-
-        UE_LOG(LogAssslash, Log, TEXT("[MC:%s] Spawn BP_DamageIndicator at %f %f %f"), 
-            *GetName(), HitLocation.X, HitLocation.Y, HitLocation.Z);
     }
 }
+
+void AAssslashCharacter::HandleMissFeedback(AAssslashCharacter* HitCharacter, FVector HitLocation)
+{
+	if (BP_Miss_Indicator)
+	{
+		float DamageIndicatorYOffset = HitCharacter->bIsLeft ? -135.0f : 135.0f;
+		FVector DamageIndicatorLocation = FVector(HitLocation.X, HitLocation.Y + DamageIndicatorYOffset, HitLocation.Z);
+		
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        
+		AActor* DamageIndicator = GetWorld()->SpawnActor<AActor>(
+			BP_Miss_Indicator,
+			DamageIndicatorLocation,
+			FRotator::ZeroRotator,
+			SpawnParams
+		);
+	}
+}
+
 
 void AAssslashCharacter::HandleHitFeedback(AAssslashCharacter* HitCharacter)
 {
@@ -437,12 +515,12 @@ void AAssslashCharacter::HandleHitFeedback(AAssslashCharacter* HitCharacter)
     {
         if (IsLocallyControlled())
         {
-            // This client hit someone else
+            // 내가 때렸을 때
             ShakeEnemyHpBar();
         }
         else
         {
-            // This client was hit by someone
+            // 내가 맞았을 때
             Enemy->ShakeMyHpBar();
             Enemy->ShowHitBG();
         }
@@ -486,6 +564,7 @@ void AAssslashCharacter::ShakeMyHpBar() const
 		PC->ClientStartCameraShake(HitCameraShakeClass, 1.0f);
 	}
 }
+
 
 // ========== 맞았을 때 world time scale 조정 ==========
 

@@ -42,13 +42,20 @@ protected:
 	TSubclassOf<class AInfoIndicator> BP_DamageIndicator_Critical;
 
 	UPROPERTY(EditAnywhere, Category="Assslash|UI")
-	TSubclassOf<class AInfoIndicator> BP_InfoIndicator;
+	TSubclassOf<class AInfoIndicator> BP_Critical_Indicator;
+
+	UPROPERTY(EditAnywhere, Category="Assslash|UI")
+	TSubclassOf<class AInfoIndicator> BP_Miss_Indicator;
+
+	UPROPERTY(EditAnywhere, Category="Assslash|UI")
+	TSubclassOf<class AInfoIndicator> BP_Counter_Attack_Indicator;
 
 	UPROPERTY(EditAnywhere, Category="Assslash|Attack")
 	FVector AttackOffsetAdjustment;
 
 	UPROPERTY(EditAnywhere, Category="Assslash|Attack")
 	TSubclassOf<class AAssslashCharacterAttackBoundary> AttackClass;
+
 
 public:
 	// Sets default values for this character's properties
@@ -59,6 +66,7 @@ public:
 
 	/** Override to set up replicated properties */
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	void HandleMissFeedback(AAssslashCharacter* HitCharacter, FVector HitLocation);
 
 	// ======================================================
 	// Delegates
@@ -127,9 +135,9 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void Server_PerformAttackTrace();
-
+	
 	void Server_OnAttackMiss(AActor* HitActor, FVector HitLocation);
-	void SpawnHitEffects(const FVector& HitLocation);
+	void SpawnHitEffects(AAssslashCharacter* HitCharacter, const FVector& HitLocation);
 	void HandleHitFeedback(AAssslashCharacter* HitCharacter);
 
 	void Server_OnAttackHit(AActor* HitActor, FVector HitLocation);
@@ -145,7 +153,10 @@ protected:
 	void Multicast_AttackAnimPlay();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_OnPlayerHit(FVector Loc, AAssslashCharacter* HitCharacter);
+	void Multicast_OnPlayerHit(FVector Loc, AAssslashCharacter* HitCharacter, uint8 IsDead);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_OnPlayerDodge(FVector Loc, AAssslashCharacter* HitCharacter);
 
 	UFUNCTION(Server, Reliable)
 	void Server_SetWorldTimeScale(float TimeScale, float ResetTime);
@@ -163,6 +174,10 @@ protected:
 	//  ========== :: Switch :: ==========
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack|Animation")
 	UAnimMontage* SwitchMontage;
+
+	//  ========== :: ETC :: ==========
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayerDead(AAssslashCharacter* DeadCharacter);
 
 public:	
 	// Called every frame
@@ -209,6 +224,9 @@ protected:
 	uint8 bIsBusy:1 = 0;
 
 	UPROPERTY(Replicated)
+	uint8 bIsDead:1 = 0;
+
+	UPROPERTY(Replicated)
 	uint8 bIsLeft:1 = 0;
 	
 	FTimerHandle BusyTimerHandle;
@@ -224,6 +242,8 @@ private:
 	AAssslashCharacterAttackBoundary* SpawnedAttackBoundary;
 
 	float MaxWalkSpeed = 500.0f;
+
+	FVector StoredImpulse;
 	
 	
 public:

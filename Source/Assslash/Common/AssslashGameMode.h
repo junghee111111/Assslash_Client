@@ -24,17 +24,50 @@ public:
 	
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
+	virtual void StartPlay() override;
+
+	void PlayLevelBGM();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayBGM(USoundBase* BGMSound, float Volume);
 
 	UPROPERTY(BlueprintAssignable, Category="Networking")
 	FOnPlayerPawnReady OnPlayerPawnReady;
 
 	UPROPERTY(BlueprintAssignable, Category="Networking")
 	FOnPlayerConnected OnPlayerConnected;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+	UAudioComponent* BGMComponent;
 	
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage);
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 	virtual FString InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId, const FString& Options, const FString& Portal = L"") override;
 
+// ========== Audio Play ==========
+protected:
+    
+	// 현재 재생 중인 BGM 추적
+	UPROPERTY()
+	USoundBase* CurrentBGM;
+
+	// 현재 재생 중인 BGM 추적
+	UPROPERTY()
+	USoundBase* BGMCue;
+    
+	// BGM 볼륨
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	float BGMVolume =1.0f;
+    
+	// BGM 페이드 인 시간 (초)
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	float FadeInTime = 1.0f;
+    
+	// BGM을 찾는 경로 (기본값 설정)
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	FString BGMBasePath = "/Game/Data/Sound/BGM/";
+
+	
 private:
 	TArray<class APlayerStart*> FreePlayerStarts;
 

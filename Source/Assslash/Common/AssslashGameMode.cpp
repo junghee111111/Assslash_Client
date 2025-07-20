@@ -8,12 +8,28 @@
 #include "Assslash/Assslash.h"
 #include "Assslash/Character/AssslashCharacter.h"
 #include "Assslash/Character/AssslashPlayerController.h"
+#include "Components/AudioComponent.h"
 #include "GameFramework/PlayerStart.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
+
 
 AAssslashGameMode::AAssslashGameMode()
 {
+	static ConstructorHelpers::FObjectFinder<USoundBase> BgmAsset(TEXT("'/Game/Data/Sound/BGM/InGame.InGame'"));
+	if (BgmAsset.Succeeded())
+	{
+		BGMCue = BgmAsset.Object;
+	}
+	
 	PlayerControllerClass = AAssslashPlayerController::StaticClass();
 	DefaultPawnClass = AAssslashCharacter::StaticClass();
+
+	// Audio Component Init.
+	BGMComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
+	BGMComponent->SetupAttachment(RootComponent);
+	BGMComponent->bAutoActivate = true;
+		
 }
 
 
@@ -77,6 +93,7 @@ void AAssslashGameMode::HandleAllPlayersReady()
 		Player1Char->SetEnemy(Player2Char); 
 		Player2Char->SetEnemy(Player1Char);
 		Player2Char->Server_SetInitialRotation();
+		PlayLevelBGM();
 		UE_LOG(LogAssslash, Log, TEXT("[GAMEMODE] Set enemies. %s is enemy of %s, and vice versa."), *Player1Char->GetName(), *Player2Char->GetName());
 	}
 }
@@ -106,4 +123,51 @@ void AAssslashGameMode::RestartPlayer(AController* NewPlayerController)
 	Super::RestartPlayer(NewPlayerController);
 	UE_LOG(LogAssslash, Log, TEXT("[GAMEMODE] RestartPlayer : %s"), *NewPlayerController->GetName())
 	
+}
+
+
+void AAssslashGameMode::StartPlay()
+{
+	Super::StartPlay();
+    
+	// 게임 시작 시 BGM 재생
+}
+
+void AAssslashGameMode::PlayLevelBGM()
+{
+	// 현재 레벨 이름 가져오기
+	FString LvName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
+	FString BGMPath = BGMBasePath + "InGame";
+
+	USoundBase* BGMSound = LoadObject<USoundBase>(nullptr, *BGMPath);
+
+	if (BGMSound)
+	{
+		// 서버에서 멀티캐스트 함수 호출
+		Multicast_PlayBGM(BGMSound, BGMVolume);
+		UE_LOG(LogAssslash, Display, TEXT("[GAMEMODE] play BGM : %s"), *BGMPath);
+	}
+	else
+	{
+		UE_LOG(LogAssslash, Error, TEXT("[GAMEMODE] BGM not found : %s"), *BGMPath);
+	}
+}
+
+void AAssslashGameMode::Multicast_PlayBGM_Implementation(USoundBase* BGMSound, float Volume)
+{
+	// 클라이언트에서 사운드 재생
+	if (BGMSound)
+	{
+		UE_LOG(LogAssslash, Display, TEXT("[GAMEMODE] play BGM at client : %s"), *GetName());
+		UGameplayStatics::PlaySound2D(
+			GetWorld(),
+			BGMSound,
+			Volume,
+			1.0f,  // 피치
+			0.0f,  // 시작 시간
+			nullptr,  // 사운드 동시 재생 설정
+			nullptr,  // 소유자
+			true    // 반복 재생
+		);
+	}
 }
