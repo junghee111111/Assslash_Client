@@ -15,8 +15,18 @@ class ASSSLASH_API UAssslashInGameResult : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UAssslashInGameResult();
+	UFUNCTION()
+	void PlayAnimShow();
 
+	UFUNCTION()
+	void PlayAnimKO();
+
+	UFUNCTION()
+	void PlayAnimWin();
+
+	UFUNCTION()
+	void PlayAnimResult();
+	
 protected:
 	// ========== Animations ==========
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidgetAnim), Transient)

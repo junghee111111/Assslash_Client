@@ -157,6 +157,10 @@ void AAssslashCharacter::Tick(float DeltaTime)
 	{
 		ShowHUD(GetController<AAssslashPlayerController>());
 	}
+	if (InGameResultUI == nullptr && IsValid(Enemy) && IsLocallyControlled() && InGameResultUIClass)
+	{
+		ShowResultHUD();
+	}
 	
 	if (bAttacking || bDodging)
 	{
@@ -208,6 +212,11 @@ void AAssslashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	UE_LOG(LogAssslash, Log, TEXT("PlayerPawn SetupPlayerInputComponent Done!"));
 }
 
+void AAssslashCharacter::Client_PlayKOAnim_Implementation()
+{
+	if (InGameResultUI) InGameResultUI->PlayAnimKO();
+}
+
 void AAssslashCharacter::Server_SetInitialRotation_Implementation()
 {
 	UE_LOG(LogAssslash, Log, TEXT("[SERVER] Server_SetInitialRotation_Implementation of %s"), *GetName());
@@ -239,6 +248,7 @@ void AAssslashCharacter::ShowResultHUD()
 	InGameResultUI = CreateWidget<UAssslashInGameResult>(APC, InGameResultUIClass);
 	if (!InGameResultUI) return;
 	InGameResultUI->AddToPlayerScreen();
+	InGameResultUI->PlayAnimShow();
 	UE_LOG(LogAssslash, Error, TEXT("[%s] Display Result HUD Correctly!"), *GetName())
 }
 
@@ -323,6 +333,8 @@ void AAssslashCharacter::Server_OnAttackHit(AActor* HitActor, FVector HitLocatio
 		// 죽음 처리
 		HitCharacter->bIsDead = 1;
 		Multicast_PlayerDead(HitCharacter);
+		this->Client_PlayKOAnim();
+		HitCharacter->Client_PlayKOAnim();
 	}
 
 	// spawn HitNiagaraSystem in every client

@@ -8,6 +8,7 @@
 #include "Assslash/Assslash.h"
 #include "Assslash/Character/AssslashCharacter.h"
 #include "Assslash/Character/AssslashPlayerController.h"
+#include "Assslash/Character/Interface/LifeComponent.h"
 #include "Components/AudioComponent.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,12 +17,6 @@
 
 AAssslashGameMode::AAssslashGameMode()
 {
-	static ConstructorHelpers::FObjectFinder<USoundBase> BgmAsset(TEXT("'/Game/Data/Sound/BGM/InGame.InGame'"));
-	if (BgmAsset.Succeeded())
-	{
-		BGMCue = BgmAsset.Object;
-	}
-	
 	PlayerControllerClass = AAssslashPlayerController::StaticClass();
 	DefaultPawnClass = AAssslashCharacter::StaticClass();
 
@@ -29,7 +24,6 @@ AAssslashGameMode::AAssslashGameMode()
 	BGMComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
 	BGMComponent->SetupAttachment(RootComponent);
 	BGMComponent->bAutoActivate = true;
-		
 }
 
 
@@ -93,7 +87,6 @@ void AAssslashGameMode::HandleAllPlayersReady()
 		Player1Char->SetEnemy(Player2Char); 
 		Player2Char->SetEnemy(Player1Char);
 		Player2Char->Server_SetInitialRotation();
-		PlayLevelBGM();
 		UE_LOG(LogAssslash, Log, TEXT("[GAMEMODE] Set enemies. %s is enemy of %s, and vice versa."), *Player1Char->GetName(), *Player2Char->GetName());
 	}
 }
@@ -125,49 +118,25 @@ void AAssslashGameMode::RestartPlayer(AController* NewPlayerController)
 	
 }
 
-
-void AAssslashGameMode::StartPlay()
+void AAssslashGameMode::Tick(float DeltaSeconds)
 {
-	Super::StartPlay();
-    
-	// 게임 시작 시 BGM 재생
-}
-
-void AAssslashGameMode::PlayLevelBGM()
-{
-	// 현재 레벨 이름 가져오기
-	FString LvName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
-	FString BGMPath = BGMBasePath + "InGame";
-
-	USoundBase* BGMSound = LoadObject<USoundBase>(nullptr, *BGMPath);
-
-	if (BGMSound)
+	Super::Tick(DeltaSeconds);
+	
+	if (ReadyPlayers.Num() < 2) return;
+	
+	
+	AAssslashCharacter* Player1Char = Cast<AAssslashCharacter>(ReadyPlayers[0]->GetPawn());
+	AAssslashCharacter* Player2Char = Cast<AAssslashCharacter>(ReadyPlayers[1]->GetPawn());
+	
+	if (IsValid(Player1Char) && IsValid(Player2Char))
 	{
-		// 서버에서 멀티캐스트 함수 호출
-		Multicast_PlayBGM(BGMSound, BGMVolume);
-		UE_LOG(LogAssslash, Display, TEXT("[GAMEMODE] play BGM : %s"), *BGMPath);
-	}
-	else
-	{
-		UE_LOG(LogAssslash, Error, TEXT("[GAMEMODE] BGM not found : %s"), *BGMPath);
-	}
-}
-
-void AAssslashGameMode::Multicast_PlayBGM_Implementation(USoundBase* BGMSound, float Volume)
-{
-	// 클라이언트에서 사운드 재생
-	if (BGMSound)
-	{
-		UE_LOG(LogAssslash, Display, TEXT("[GAMEMODE] play BGM at client : %s"), *GetName());
-		UGameplayStatics::PlaySound2D(
-			GetWorld(),
-			BGMSound,
-			Volume,
-			1.0f,  // 피치
-			0.0f,  // 시작 시간
-			nullptr,  // 사운드 동시 재생 설정
-			nullptr,  // 소유자
-			true    // 반복 재생
-		);
+		UE_LOG(LogAssslash, Log, TEXT("[GAMEMODE] Tick : %s"), *Player1Char->GetName());
+		if (Player1Char->GetComponentByClass<ULifeComponent>()->GetHp()<=0 ||
+			Player2Char->GetComponentByClass<ULifeComponent>()->GetHp()<=0
+		)
+		{
+			Player1Char->Client_PlayKOAnim();
+			Player2Char->Client_PlayKOAnim();
+		}
 	}
 }

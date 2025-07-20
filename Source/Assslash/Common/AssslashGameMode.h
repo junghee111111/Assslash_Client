@@ -24,13 +24,8 @@ public:
 	
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
-	virtual void StartPlay() override;
-
-	void PlayLevelBGM();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_PlayBGM(USoundBase* BGMSound, float Volume);
-
+	virtual void Tick(float DeltaSeconds) override;
+	
 	UPROPERTY(BlueprintAssignable, Category="Networking")
 	FOnPlayerPawnReady OnPlayerPawnReady;
 

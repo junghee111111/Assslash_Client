@@ -273,4 +273,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetIsDodging(bool newDodging);
+
+	UFUNCTION(Client, Reliable)
+	void Client_PlayKOAnim();
 };

@@ -3,6 +3,20 @@
 
 #include "AssslashInGameResult.h"
 
-UAssslashInGameResult::UAssslashInGameResult()
+void UAssslashInGameResult::PlayAnimShow()
+{
+	PlayAnimation(show);
+}
+
+void UAssslashInGameResult::PlayAnimKO()
+{
+	PlayAnimation(KO);
+}
+
+void UAssslashInGameResult::PlayAnimWin()
+{
+}
+
+void UAssslashInGameResult::PlayAnimResult()
 {
 }
