@@ -365,6 +365,18 @@ void AAssslashCharacter::Multicast_OnPlayerHit_Implementation(FVector HitLocatio
     SpawnHitEffects(HitLocation);
     HandleHitFeedback(HitCharacter);
 	Server_SetWorldTimeScale(0.4f, 0.15f);
+
+	if (HitCharacter)
+	{
+		FVector LaunchDirection = HitCharacter->GetActorLocation() - GetActorLocation();
+		LaunchDirection.Normalize();
+		LaunchDirection.Z += 0.5f;
+		LaunchDirection.Normalize();
+
+		float LaunchStrength = 500.f;
+
+		HitCharacter->LaunchCharacter(LaunchDirection*LaunchStrength, true, true);
+	}
 }
 
 void AAssslashCharacter::SpawnHitEffects(const FVector& HitLocation)
@@ -384,6 +396,22 @@ void AAssslashCharacter::SpawnHitEffects(const FVector& HitLocation)
             NiagaraLocation
         );
     }
+
+	// Play explosion sound
+	if (ExplosionSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			ExplosionSound,
+			HitLocation,
+			1.0f,
+			1.0f,
+			0.0f,
+			nullptr,
+			nullptr
+			);
+	}
+	
 
     // Spawn damage indicator
     if (BP_DamageIndicator)

@@ -66,6 +66,12 @@ public:
 	// UPROPERTY(BlueprintAssignable, Category="Assslash|Damage")
 	// FTakeAnyDamageSignature OnTakeAnyDamage;
 
+	// ========== Sounds ==========
+	// 폭발 사운드 에셋
+	UPROPERTY(EditAnywhere, Category = "Assslash|SFX")
+	USoundBase* ExplosionSound;
+
+
 protected:
 	UFUNCTION()
 	void ShowHUD(AAssslashPlayerController* APC);
