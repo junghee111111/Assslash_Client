@@ -61,9 +61,6 @@ public:
 	// Sets default values for this character's properties
 	AAssslashCharacter();
 
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_DisplayHUD();
-
 	/** Override to set up replicated properties */
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	void HandleMissFeedback(AAssslashCharacter* HitCharacter, FVector HitLocation);
@@ -83,8 +80,9 @@ public:
 protected:
 	UFUNCTION()
 	void ShowHUD(AAssslashPlayerController* APC);
-	
-	
+	void ShowResultHUD();
+
+
 	UFUNCTION()
 	void HandleNewPlayerConnected(APlayerController* NewPlayerController);
 	
@@ -205,12 +203,18 @@ public:
 	void Server_SetInitialRotation();
 
 protected:
-	/** HUD */
-	UPROPERTY(EditAnywhere)
+	/** ========== HUD ========== */
+	UPROPERTY(EditAnywhere, Category="Assslash|UI")
 	TSubclassOf<class UAssslashHUD> PlayerHUDClass;
 
 	UPROPERTY()
 	class UAssslashHUD* PlayerHUD;
+
+	UPROPERTY(EditAnywhere, Category="Assslash|UI")
+	TSubclassOf<class UAssslashInGameResult> InGameResultUIClass;
+
+	UPROPERTY()
+	class UAssslashInGameResult* InGameResultUI;
 
 	/** Behaviours */
 

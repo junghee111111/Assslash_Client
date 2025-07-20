@@ -19,6 +19,7 @@
 #include "Net/UnrealNetwork.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Assslash/UI/AssslashInGameResult.h"
 #include "Interface/LifeComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -232,31 +233,13 @@ void AAssslashCharacter::ShowHUD(AAssslashPlayerController* APC)
 	UE_LOG(LogAssslash, Error, TEXT("[%s] Display HUD Correctly!"), *GetName())
 }
 
-void AAssslashCharacter::Multicast_DisplayHUD_Implementation()
+void AAssslashCharacter::ShowResultHUD()
 {
-	if (!IsLocallyControlled())
-	{
-		UE_LOG(LogAssslash, Error, TEXT("[MC:%s] Not locally controlled, skipping HUD creation."), *GetName());
-		return; 
-	}
-	AAssslashPlayerController* APC = GetController<AAssslashPlayerController>();
-	if (APC && PlayerHUDClass && PlayerHUD == nullptr)
-	{
-		ShowHUD(APC);
-	}
-	else if (PlayerHUD && PlayerHUD->IsInViewport())
-	{
-		UE_LOG(LogAssslash, Log, TEXT("[MC:%s] HUD already exists and is in viewport. Not re-creating."), *GetName());
-	}
-	else if (PlayerHUD && !PlayerHUD->IsInViewport())
-	{
-		PlayerHUD->AddToPlayerScreen();
-		UE_LOG(LogAssslash, Log, TEXT("[MC:%s] Existing HUD re-added to screen."), *GetName());
-	}
-	else if (!PlayerHUDClass)
-	{
-		UE_LOG(LogAssslash, Error, TEXT("[MC:%s] PlayerHUDClass is not set! Please assign it in Blueprint."), *GetName());
-	}
+	AAssslashPlayerController* APC = Cast<AAssslashPlayerController>(Controller);
+	InGameResultUI = CreateWidget<UAssslashInGameResult>(APC, InGameResultUIClass);
+	if (!InGameResultUI) return;
+	InGameResultUI->AddToPlayerScreen();
+	UE_LOG(LogAssslash, Error, TEXT("[%s] Display Result HUD Correctly!"), *GetName())
 }
 
 
