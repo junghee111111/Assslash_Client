@@ -18,6 +18,9 @@ class ASSSLASH_API AAssslashPlayerController : public APlayerController
 public:
 	virtual void SetupInputComponent() override;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsInGame = true;
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -27,4 +30,5 @@ protected:
 
 	UPROPERTY()
 	ABattleCam* BattleCamActor;
+
 };

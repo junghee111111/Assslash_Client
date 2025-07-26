@@ -16,7 +16,7 @@ void AAssslashPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (BattleCamActorClass)
+	if (BattleCamActorClass && bIsInGame)
 	{
 		BattleCamActor = GetWorld()->SpawnActor<ABattleCam>(BattleCamActorClass, FVector::ZeroVector, FRotator::ZeroRotator);
 		if (BattleCamActor)
@@ -29,6 +29,12 @@ void AAssslashPlayerController::BeginPlay()
 	} else
 	{
 		UE_LOG(LogAssslash, Error, TEXT("BattleCamActorClass가 정의되지 않았습니다!"))
+	}
+
+	if (bIsInGame == false)
+	{
+		SetShowMouseCursor(true);
+		SetInputMode(FInputModeGameAndUI());
 	}
 }
 
