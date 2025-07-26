@@ -13,4 +13,12 @@ UCLASS()
 class ASSSLASH_API UAssslashGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
+
+private:
+	FString AuthToken;
+	FDateTime AuthTokenExpireTime;
+
+public:
+	UFUNCTION(BlueprintCallable, Category="Assslash Authentication")
+	void SetAuthToken(const FString& Token, float ExpirationTimeInSeconds = 0.0f);
 };

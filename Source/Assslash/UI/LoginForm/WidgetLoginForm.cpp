@@ -38,7 +38,7 @@ void UWidgetLoginForm::OnSubmitButtonClicked()
 {
 	ShowLoading(true);
 
-	SendHTTPPost("");
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
 }
 
 void UWidgetLoginForm::ShowLoading(bool bIsLoading)

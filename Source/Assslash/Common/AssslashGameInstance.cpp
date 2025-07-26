@@ -2,3 +2,8 @@
 
 
 #include "AssslashGameInstance.h"
+
+void UAssslashGameInstance::SetAuthToken(const FString& Token, float ExpirationTimeInSeconds)
+{
+	AuthToken = Token;
+}
