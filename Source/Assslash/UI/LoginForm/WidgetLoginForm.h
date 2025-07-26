@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HttpModule.h"
 #include "Blueprint/UserWidget.h"
 #include "WidgetLoginForm.generated.h"
 
@@ -15,6 +16,9 @@ class ASSSLASH_API UWidgetLoginForm : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+	virtual void NativeOnInitialized() override;
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 	// ========== Widgets ==========
 	
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
@@ -25,4 +29,13 @@ public:
 
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	class UButton* Button_Submit;
+	
+	UFUNCTION()
+	void OnSubmitButtonClicked();
+
+	UFUNCTION(BlueprintCallable)
+	void ShowLoading(bool bIsLoading);
+
+private:
+	FHttpModule* Http;
 };
