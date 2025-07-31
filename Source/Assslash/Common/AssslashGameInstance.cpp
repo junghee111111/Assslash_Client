@@ -5,7 +5,7 @@
 
 #include "Animation/WidgetAnimation.h"
 #include "Assslash/Assslash.h"
-#include "Assslash/UI/ToastMessage/WidgetToastMessage.h"
+#include "Assslash/UI/Common/WidgetToastMessage.h"
 #include "Blueprint/UserWidget.h"
 
 void UAssslashGameInstance::Init()

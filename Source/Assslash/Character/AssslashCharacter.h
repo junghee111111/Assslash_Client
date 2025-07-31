@@ -7,7 +7,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/Actor.h"
 #include "AssslashPlayerController.h"
-#include "Assslash/UI/Indicator/InfoIndicator.h"
+#include "Assslash/UI/Ingame/InfoIndicator.h"
 #include "AssslashCharacter.generated.h"
 
 class UAnimMontage;

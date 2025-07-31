@@ -10,7 +10,7 @@
 #include "Assslash/Common/AssslashGameMode.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Assslash/UI/AssslashHUD.h"
+#include "Assslash/UI/Ingame/AssslashHUD.h"
 #include "Behaviour/AssslashCharacterAttackBoundary.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -19,7 +19,7 @@
 #include "Net/UnrealNetwork.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
-#include "Assslash/UI/AssslashInGameResult.h"
+#include "Assslash/UI/Ingame/AssslashInGameResult.h"
 #include "Interface/LifeComponent.h"
 #include "Kismet/GameplayStatics.h"
 
