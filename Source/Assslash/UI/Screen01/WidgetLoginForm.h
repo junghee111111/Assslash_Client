@@ -16,7 +16,6 @@ class ASSSLASH_API UWidgetLoginForm : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 	// ========== Widgets ==========
@@ -29,6 +28,8 @@ public:
 
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	class UButton* Button_Submit;
+
+	void OnLoginResponse(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bArg);
 	
 	UFUNCTION()
 	void OnSubmitButtonClicked();
