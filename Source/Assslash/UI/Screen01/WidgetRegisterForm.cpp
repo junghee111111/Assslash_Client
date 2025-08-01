@@ -36,7 +36,6 @@ void UWidgetRegisterForm::OnRegisterResponse(FHttpRequestPtr HttpRequest, FHttpR
 
 void UWidgetRegisterForm::OnRegisterButtonClicked()
 {
-	GetGameInstance<UAssslashGameInstance>()->ShowLoading(true);
 	FString Username = TEXT("");
 	FString Password = TEXT("");
 	FString PasswordCheck = TEXT("");
@@ -61,6 +60,8 @@ void UWidgetRegisterForm::OnRegisterButtonClicked()
 	{
 		return;
 	}
+
+	GetGameInstance<UAssslashGameInstance>()->ShowLoading(true);
 
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = UHttpUtil::CreateRequest();
 	UHttpUtil::SetupRequestHeaders(Request, TEXT("register"), TEXT("POST"));
