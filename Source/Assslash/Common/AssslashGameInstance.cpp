@@ -55,6 +55,7 @@ void UAssslashGameInstance::ShowConfirm(const FText Title, const FText Content, 
 	{
 		APlayerController* PC = GetFirstLocalPlayerController();
 		UI_Confirm = CreateWidget<UWidgetConfirm>(PC,UI_ConfirmClass);
+		
 	}
 	
 	if (UI_Confirm)

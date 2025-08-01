@@ -5,6 +5,7 @@
 
 #include "Assslash/Common/AssslashGameInstance.h"
 #include "Assslash/Util/HttpUtil.h"
+#include "Assslash/Util/StringTableUtil.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 
@@ -53,11 +54,21 @@ void UWidgetRegisterForm::OnRegisterButtonClicked()
 
 	if (Username.IsEmpty() || Password.IsEmpty() || PasswordCheck.IsEmpty() || Name.IsEmpty())
 	{
+		GetGameInstance<UAssslashGameInstance>()->ShowConfirm(
+			UStringTableUtil::GetUIString(TEXT("UI_CONFIRM_DEFAULT_TITLE")),
+			UStringTableUtil::GetUIString(TEXT("FORM_EMPTY_NOT_ALLOWED")),
+			true
+		);
 		return;
 	}
 	
 	if (Password!=PasswordCheck)
 	{
+		GetGameInstance<UAssslashGameInstance>()->ShowConfirm(
+			UStringTableUtil::GetUIString(TEXT("UI_CONFIRM_DEFAULT_TITLE")),
+			UStringTableUtil::GetUIString(TEXT("REGISTER_PASSWORD_CHECK_FAILED")),
+			true
+		);
 		return;
 	}
 
