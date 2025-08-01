@@ -36,7 +36,8 @@ void UWidgetLoginForm::OnLoginResponse(
 	bool bWasSuccessful
 	)
 {
-	ShowLoading(false);
+	GetGameInstance<UAssslashGameInstance>()->ShowLoading(false);
+	
 	if (HttpResponse.IsValid())
 	{
 		if (HttpResponse->GetResponseCode() == 200)
@@ -57,7 +58,7 @@ void UWidgetLoginForm::OnLoginResponse(
 
 void UWidgetLoginForm::OnSubmitButtonClicked()
 {
-	ShowLoading(true);
+	GetGameInstance<UAssslashGameInstance>()->ShowLoading(true);
 	
 	FString Username = TEXT("");
 	FString Password = TEXT("");
@@ -76,15 +77,7 @@ void UWidgetLoginForm::OnSubmitButtonClicked()
 		JsonBody->SetStringField(TEXT("username"), Username);
 		JsonBody->SetStringField(TEXT("password"), Password);
 
-		FString JsonBodyString;
-		TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonBodyString);
-		FJsonSerializer::Serialize(JsonBody.ToSharedRef(), Writer);
-
-		Request->SetContentAsString(JsonBodyString);
+		Request->SetContentAsString(UHttpUtil::JsonToString(JsonBody));
 		Request->ProcessRequest();
 	}
-}
-
-void UWidgetLoginForm::ShowLoading(bool bIsLoading)
-{
 }

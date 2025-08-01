@@ -19,6 +19,23 @@ void UAssslashGameInstance::SetAuthToken(const FString& Token, float ExpirationT
 	AuthToken = Token;
 }
 
+void UAssslashGameInstance::ShowLoading(bool Show)
+{
+	if (Show==true)
+	{
+		if (!UI_Loading)
+		{
+			APlayerController* PC = GetFirstLocalPlayerController();
+			UI_Loading = CreateWidget<UUserWidget>(PC,UI_LoadingClass);
+			if (UI_Loading) UI_Loading->AddToViewport();
+		}
+		UI_Loading->SetVisibility(ESlateVisibility::Visible);
+	} else
+	{
+		if (UI_Loading) UI_Loading->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
 void UAssslashGameInstance::ShowToastMessage(const FString& Message)
 {
 	

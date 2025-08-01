@@ -34,9 +34,6 @@ public:
 	UFUNCTION()
 	void OnSubmitButtonClicked();
 
-	UFUNCTION(BlueprintCallable)
-	void ShowLoading(bool bIsLoading);
-
 private:
 	FHttpModule* Http;
 };
