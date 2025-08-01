@@ -59,11 +59,8 @@ void UWidgetLoginForm::OnLoginResponse(
 
 void UWidgetLoginForm::OnSubmitButtonClicked()
 {
-	GetGameInstance<UAssslashGameInstance>()->ShowLoading(true);
-	
 	FString Username = TEXT("");
 	FString Password = TEXT("");
-    
 	if (TextBox_Username && TextBox_Password)
 	{
 		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request =
@@ -84,10 +81,12 @@ void UWidgetLoginForm::OnSubmitButtonClicked()
 			return;
 		}
 
+		
 		TSharedPtr<FJsonObject> JsonBody = MakeShareable(new FJsonObject);
 		JsonBody->SetStringField(TEXT("username"), Username);
 		JsonBody->SetStringField(TEXT("password"), Password);
 
+		GetGameInstance<UAssslashGameInstance>()->ShowLoading(true);
 		Request->SetContentAsString(UHttpUtil::JsonToString(JsonBody));
 		Request->ProcessRequest();
 	}

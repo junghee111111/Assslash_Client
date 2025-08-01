@@ -26,6 +26,12 @@ public:
 	UPROPERTY(EditAnywhere, meta=(BindWidget), BlueprintReadWrite)
 	class URichTextBlock* Content;
 
+	UPROPERTY(EditAnywhere, meta=(BindWidget), BlueprintReadWrite)
+	class UButton* Button_Yes;
+
+	UPROPERTY(EditAnywhere, meta=(BindWidget), BlueprintReadWrite)
+	UButton* Button_No;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool Simple;
 
