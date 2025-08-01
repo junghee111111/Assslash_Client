@@ -32,4 +32,6 @@ public:
 		const FString& Endpoint,
 		const FString& Verb
 	);
+
+	static FString JsonToString(const TSharedPtr<FJsonObject>& Json);
 };

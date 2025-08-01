@@ -44,3 +44,11 @@ void UHttpUtil::SetupRequestHeaders(
 
 	
 }
+
+FString UHttpUtil::JsonToString(const TSharedPtr<FJsonObject>& Json)
+{
+	FString JsonString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
+	FJsonSerializer::Serialize(Json.ToSharedRef(), Writer);
+	return JsonString;
+}
