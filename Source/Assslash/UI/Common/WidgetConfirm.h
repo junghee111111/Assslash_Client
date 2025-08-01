@@ -15,6 +15,10 @@ class ASSSLASH_API UWidgetConfirm : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	// ========== Animations ==========
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidgetAnim), Transient)
+	class UWidgetAnimation* init;
+	
 	// ========== Widgets ==========
 	UPROPERTY(EditAnywhere, meta=(BindWidget), BlueprintReadWrite)
 	class UTextBlock* Title;
@@ -26,5 +30,5 @@ public:
 	bool Simple;
 
 	UFUNCTION(BlueprintCallable)
-	void SetData(FText TitleMessage, FText ContentMessage, bool bSimple);
+	void Show(const FText& TitleMessage, const FText& ContentMessage, bool bSimple);
 };

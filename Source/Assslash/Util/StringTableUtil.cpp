@@ -3,8 +3,24 @@
 
 #include "StringTableUtil.h"
 
-FText UStringTableUtil::GetUIString(const FName& Key)
+#include "Assslash/Assslash.h"
+#include "Internationalization/StringTable.h"
+#include "Internationalization/StringTableCore.h"
+
+UStringTable* UStringTableUtil::UIStringTable = nullptr;
+
+FText UStringTableUtil::GetUIString(const FTextKey Key)
 {
-	FText Found = FText::FromStringTable(FName("ST_UI"), Key.ToString());
-	return Found;
+	if (!UIStringTable)
+	{
+		FSoftObjectPath SoftPath(TEXT("/Game/Base/Strings/ST_UI"));
+		UIStringTable = Cast<UStringTable>(SoftPath.TryLoad());
+	}
+	if (UIStringTable)
+	{
+		FString Found = UIStringTable->GetStringTable()->FindEntry(Key)->GetSourceString();
+		UE_LOG(LogAssslash, Warning, TEXT("GetUIString [%s] : %s"), *Key.ToString(), *Found);
+		return FText::FromString(Found);
+	} 
+	return FText::FromString(TEXT("STRING TABLE NOT FOUND"));
 }

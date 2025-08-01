@@ -6,6 +6,7 @@
 #include "Assslash/Assslash.h"
 #include "Assslash/Common/AssslashGameInstance.h"
 #include "Assslash/Util/HttpUtil.h"
+#include "Assslash/Util/StringTableUtil.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Interfaces/IHttpResponse.h"
@@ -72,6 +73,16 @@ void UWidgetLoginForm::OnSubmitButtonClicked()
 		
 		Username = TextBox_Username->GetText().ToString();
 		Password = TextBox_Password->GetText().ToString();
+
+		if (Username.IsEmpty() || Password.IsEmpty())
+		{
+			GetGameInstance<UAssslashGameInstance>()->ShowConfirm(
+				UStringTableUtil::GetUIString(TEXT("UI_CONFIRM_DEFAULT_TITLE")),
+				UStringTableUtil::GetUIString(TEXT("FORM_EMPTY_NOT_ALLOWED")),
+				true
+			);
+			return;
+		}
 
 		TSharedPtr<FJsonObject> JsonBody = MakeShareable(new FJsonObject);
 		JsonBody->SetStringField(TEXT("username"), Username);

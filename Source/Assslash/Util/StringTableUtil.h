@@ -15,6 +15,7 @@ class ASSSLASH_API UStringTableUtil : public UObject
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable)
-	static FText GetUIString(const FName& Key);
+	static FText GetUIString(const FTextKey Key);
+
+	static UStringTable* UIStringTable;
 };

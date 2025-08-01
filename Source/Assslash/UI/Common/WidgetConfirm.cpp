@@ -6,9 +6,10 @@
 #include "Components/RichTextBlock.h"
 #include "Components/TextBlock.h"
 
-void UWidgetConfirm::SetData(FText TitleMessage, FText ContentMessage, bool bSimple)
+void UWidgetConfirm::Show(const FText& TitleMessage, const FText& ContentMessage, bool bSimple)
 {
 	this->Title->SetText(TitleMessage);
 	this->Content->SetText(ContentMessage);
 	this->Simple = bSimple;
+	this->PlayAnimation(init);
 }

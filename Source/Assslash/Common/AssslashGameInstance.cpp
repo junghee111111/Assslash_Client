@@ -5,6 +5,7 @@
 
 #include "Animation/WidgetAnimation.h"
 #include "Assslash/Assslash.h"
+#include "Assslash/UI/Common/WidgetConfirm.h"
 #include "Assslash/UI/Common/WidgetToastMessage.h"
 #include "Blueprint/UserWidget.h"
 
@@ -46,4 +47,19 @@ void UAssslashGameInstance::ShowToastMessage(const FString& Message)
 		if (UI_ToastMessage) UI_ToastMessage->AddToViewport();
 	}
 	UI_ToastMessage->ShowToastMessage(Message);
+}
+
+void UAssslashGameInstance::ShowConfirm(const FText Title, const FText Content, const bool bSimple)
+{
+	if (!UI_Confirm)
+	{
+		APlayerController* PC = GetFirstLocalPlayerController();
+		UI_Confirm = CreateWidget<UWidgetConfirm>(PC,UI_ConfirmClass);
+	}
+	
+	if (UI_Confirm)
+	{
+		UI_Confirm->AddToViewport();
+		UI_Confirm->Show(Title, Content, bSimple);
+	}
 }
