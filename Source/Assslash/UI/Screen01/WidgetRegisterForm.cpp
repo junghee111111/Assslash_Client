@@ -60,6 +60,7 @@ void UWidgetRegisterForm::OnRegisterResponse(
 			UStringTableUtil::GetUIString(TEXT("REGISTER_DONE")),
 			true
 			);
+		OnBackButtonClicked.Broadcast();
 	} else if (HttpResponse->GetResponseCode() == 401)
 	{
 		GI->ShowConfirm(

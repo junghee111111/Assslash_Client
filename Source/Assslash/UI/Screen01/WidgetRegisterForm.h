@@ -10,6 +10,9 @@
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBackButtonClickedDelegate);
+
 UCLASS()
 class ASSSLASH_API UWidgetRegisterForm : public UUserWidget
 {
@@ -24,6 +27,8 @@ class ASSSLASH_API UWidgetRegisterForm : public UUserWidget
 	void OnRegisterButtonClicked();
 	
 public:
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, EditAnywhere)
+	FOnBackButtonClickedDelegate OnBackButtonClicked;
 	
 	// ========== Widgets ==========
 	UPROPERTY(EditAnywhere, meta=(BindWidget))

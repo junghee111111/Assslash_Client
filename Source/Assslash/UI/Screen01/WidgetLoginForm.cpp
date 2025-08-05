@@ -51,6 +51,16 @@ void UWidgetLoginForm::OnLoginResponse(
 	
 	if (HttpResponse->GetResponseCode() == 200)
 	{
+		FString RawToken = HttpResponse->GetHeader(TEXT("authorization"));
+		if (RawToken.IsEmpty())
+		{
+			GI->ShowToastMessage(
+				UStringTableUtil::GetUIString(TEXT("LOGIN_NO_TOKEN")).ToString()
+			);
+			return;
+		}
+		FString Token = RawToken.Replace(TEXT("Bearer "), TEXT(""));
+		GI->SetAuthToken(Token);
 		GI->ShowLoading(true);
 		GI->OpenLevel("/Game/OnlineLobby");
 	} else if (HttpResponse->GetResponseCode() == 401)

@@ -16,6 +16,15 @@ class ASSSLASH_API UAssslashGameInstance : public UGameInstance
 
 private:
 	FString AuthToken;
+
+public:
+	UFUNCTION(BlueprintCallable, Category="Authentication")
+	FString GetAuthToken();
+
+	UFUNCTION(BlueprintCallable, Category="Authentication")
+	void SetAuthToken(const FString& Token);
+
+private:
 	FDateTime AuthTokenExpireTime;
 	
 	UPROPERTY()
@@ -30,9 +39,6 @@ private:
 public:
 	virtual void Init() override;
 	
-	UFUNCTION(BlueprintCallable, Category="Assslash Authentication")
-	void SetAuthToken(const FString& Token, float ExpirationTimeInSeconds = 0.0f);
-
 	// ========== Widgets =========
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Common UI")
 	TSubclassOf<class UWidgetToastMessage> UI_ToastMessageClass;

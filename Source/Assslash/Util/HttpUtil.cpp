@@ -36,10 +36,9 @@ void UHttpUtil::SetupRequestHeaders(
 		Request->SetURL(FullUrl);
 		Request->SetVerb(Verb);
 
-		UE_LOG(LogAssslash, Log, TEXT("[HttpUtil] [%s] %s \n\t...=> %s \n\t...=> %s"),
-		*Verb, *FullUrl,
-		*Request->GetHeader(TEXT("User-Agent")), *Request->GetHeader(TEXT("Content-Type"))
-	)
+		UE_LOG(LogAssslash, Log, TEXT("[HttpUtil] [%s] %s"),
+		*Verb, *FullUrl
+		);
 	}
 
 	

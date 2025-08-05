@@ -9,15 +9,21 @@
 #include "Assslash/UI/Common/WidgetToastMessage.h"
 #include "Blueprint/UserWidget.h"
 
+FString UAssslashGameInstance::GetAuthToken()
+{
+	return AuthToken;
+}
+
 void UAssslashGameInstance::Init()
 {
 	Super::Init();
 	
 }
 
-void UAssslashGameInstance::SetAuthToken(const FString& Token, float ExpirationTimeInSeconds)
+void UAssslashGameInstance::SetAuthToken(const FString& Token)
 {
 	AuthToken = Token;
+	return;
 }
 
 void UAssslashGameInstance::ShowLoading(bool Show)
