@@ -52,3 +52,11 @@ FString UHttpUtil::JsonToString(const TSharedPtr<FJsonObject>& Json)
 	FJsonSerializer::Serialize(Json.ToSharedRef(), Writer);
 	return JsonString;
 }
+
+TSharedPtr<FJsonObject> UHttpUtil::StringToJson(const FString& Content)
+{
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Content);
+	FJsonSerializer::Deserialize(Reader, JsonObject);
+	return JsonObject;
+}

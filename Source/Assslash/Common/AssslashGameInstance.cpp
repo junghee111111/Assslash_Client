@@ -64,3 +64,10 @@ void UAssslashGameInstance::ShowConfirm(const FText Title, const FText Content, 
 		UI_Confirm->Show(Title, Content, bSimple);
 	}
 }
+
+void UAssslashGameInstance::OpenLevel(const FName& LevelName, bool bAbsolute)
+{
+	APlayerController* PC = GetFirstLocalPlayerController();
+	check(PC);
+	PC->ClientTravel(LevelName.ToString(), TRAVEL_Absolute,false);
+}

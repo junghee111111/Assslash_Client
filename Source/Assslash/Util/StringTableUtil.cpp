@@ -18,9 +18,14 @@ FText UStringTableUtil::GetUIString(const FTextKey Key)
 	}
 	if (UIStringTable)
 	{
-		FString Found = UIStringTable->GetStringTable()->FindEntry(Key)->GetSourceString();
-		UE_LOG(LogAssslash, Warning, TEXT("GetUIString [%s] : %s"), *Key.ToString(), *Found);
-		return FText::FromString(Found);
+		FStringTableEntryConstPtr Found = UIStringTable->GetStringTable()->FindEntry(Key);
+		if (Found)
+		{
+			FString FoundString = Found->GetSourceString();
+			UE_LOG(LogAssslash, Warning, TEXT("GetUIString [%s] : %s"), *Key.ToString(), *FoundString);
+			return FText::FromString(FoundString);
+		}
+		return FText::FromString(TEXT("[NOT FOUND]"));
 	} 
 	return FText::FromString(TEXT("STRING TABLE NOT FOUND"));
 }

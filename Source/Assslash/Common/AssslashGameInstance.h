@@ -51,4 +51,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="UI")
 	void ShowConfirm(FText Title, FText Content, bool bSimple);
+
+    UFUNCTION(BlueprintCallable, Category="Level")
+    void OpenLevel(const FName& LevelName, bool bAbsolute = false);
 };

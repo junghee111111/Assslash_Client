@@ -37,23 +37,32 @@ void UWidgetLoginForm::OnLoginResponse(
 	bool bWasSuccessful
 	)
 {
-	GetGameInstance<UAssslashGameInstance>()->ShowLoading(false);
+	UAssslashGameInstance* GI = GetGameInstance<UAssslashGameInstance>();
+	check(GI);
+	GI->ShowLoading(false);
 	
-	if (HttpResponse.IsValid())
+	if (!HttpResponse.IsValid())
 	{
-		if (HttpResponse->GetResponseCode() == 200)
-		{
-			UE_LOG(LogAssslash, Log, TEXT("Login Success"));
-		} else
-		{
-			GetGameInstance<UAssslashGameInstance>()->ShowToastMessage(
-				TEXT("Login Failed!")
-				);
-		}
+		GI->ShowToastMessage(
+				UStringTableUtil::GetUIString(TEXT("LOGIN_UNEXPECTED_ERROR")).ToString()
+			);
+		return;
 	}
-	else
+	
+	if (HttpResponse->GetResponseCode() == 200)
 	{
-		GetGameInstance<UAssslashGameInstance>()->ShowToastMessage(TEXT("Can't connect to server.."));
+		GI->ShowLoading(true);
+		GI->OpenLevel("/Game/OnlineLobby");
+	} else if (HttpResponse->GetResponseCode() == 401)
+	{
+		GI->ShowToastMessage(
+			UStringTableUtil::GetUIString(TEXT("LOGIN_401")).ToString()
+		);
+	} else
+	{
+		GI->ShowToastMessage(
+			UStringTableUtil::GetUIString(TEXT("LOGIN_UNEXPECTED_ERROR")).ToString()
+		);
 	}
 }
 

@@ -34,4 +34,6 @@ public:
 	);
 
 	static FString JsonToString(const TSharedPtr<FJsonObject>& Json);
+
+	static TSharedPtr<FJsonObject> StringToJson(const FString& Content);
 };
