@@ -18,6 +18,7 @@ private:
 	FString AuthToken;
 
 public:
+
 	UFUNCTION(BlueprintCallable, Category="Authentication")
 	FString GetAuthToken();
 
@@ -36,8 +37,17 @@ private:
 	UPROPERTY()
 	class UWidgetConfirm* UI_Confirm = nullptr;
 
+	class UAudioComponent* BGMComponent = nullptr;
+	float BGMVolume = 1.0f;
+	float BGMLowPassFilterHz = 1000.0f;
+
+	UPROPERTY()
+	USoundBase* BGMCurrentPath;
+
 public:
 	virtual void Init() override;
+	virtual void OnStart() override;
+	virtual void OnWorldChanged(UWorld* OldWorld, UWorld* NewWorld) override;
 	
 	// ========== Widgets =========
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Common UI")
@@ -60,4 +70,7 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="Level")
     void OpenLevel(const FName& LevelName, bool bAbsolute = false);
+
+	UFUNCTION(BlueprintCallable, Category="Audio")
+	void PlayBGM(USoundBase* NewBGM);
 };

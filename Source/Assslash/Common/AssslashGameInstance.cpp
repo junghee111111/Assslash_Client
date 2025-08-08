@@ -8,6 +8,8 @@
 #include "Assslash/UI/Common/WidgetConfirm.h"
 #include "Assslash/UI/Common/WidgetToastMessage.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/AudioComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 FString UAssslashGameInstance::GetAuthToken()
 {
@@ -17,7 +19,17 @@ FString UAssslashGameInstance::GetAuthToken()
 void UAssslashGameInstance::Init()
 {
 	Super::Init();
-	
+}
+
+void UAssslashGameInstance::OnStart()
+{
+	Super::OnStart();
+}
+
+void UAssslashGameInstance::OnWorldChanged(UWorld* OldWorld, UWorld* NewWorld)
+{
+	Super::OnWorldChanged(OldWorld, NewWorld);
+	UE_LOG(LogAssslash, Log, TEXT("[GAMEINSTANCE] OnWorldChanged"));
 }
 
 void UAssslashGameInstance::SetAuthToken(const FString& Token)
@@ -75,5 +87,56 @@ void UAssslashGameInstance::OpenLevel(const FName& LevelName, bool bAbsolute)
 {
 	APlayerController* PC = GetFirstLocalPlayerController();
 	check(PC);
-	PC->ClientTravel(LevelName.ToString(), TRAVEL_Absolute,false);
+	PC->ClientTravel(LevelName.ToString(), TRAVEL_Absolute,true);
+}
+
+void UAssslashGameInstance::PlayBGM(USoundBase* NewBGM)
+{
+	// 입력 확인
+	if (!NewBGM)
+	{
+		UE_LOG(LogAssslash, Error, TEXT("BGM is empty"));
+		return;
+	}
+
+	// 월드 확인
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		UE_LOG(LogAssslash, Error, TEXT("Invalid World context"));
+		return;
+	}
+
+	// 동일한 BGM인지 확인
+	if (BGMCurrentPath == NewBGM && BGMComponent && BGMComponent->IsPlaying())
+	{
+		return;
+	}
+    
+	// 현재 BGM 저장
+	BGMCurrentPath = NewBGM;
+
+	// 기존 컴포넌트 정리
+	if (BGMComponent && BGMComponent->IsValidLowLevel())
+	{
+		if (BGMComponent->IsPlaying())
+		{
+			BGMComponent->Stop();
+		}
+		BGMComponent = nullptr;
+	}
+    
+	// 새 사운드 스폰
+	BGMComponent = UGameplayStatics::SpawnSound2D(World, NewBGM, 1.0f, 1.0f, 0.0f, nullptr, true, true);
+    
+	if (BGMComponent)
+	{
+		BGMComponent->bAutoDestroy = false;
+		BGMComponent->bIsUISound = true;
+		UE_LOG(LogAssslash, Log, TEXT("Playing BGM: %s"), *NewBGM->GetName());
+	}
+	else
+	{
+		UE_LOG(LogAssslash, Error, TEXT("Failed to create BGM component"));
+	}
 }
