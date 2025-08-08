@@ -5,6 +5,7 @@
 
 #include "Animation/WidgetAnimation.h"
 #include "Assslash/Assslash.h"
+#include "Assslash/UI/Common/WidgetCommonTransition.h"
 #include "Assslash/UI/Common/WidgetConfirm.h"
 #include "Assslash/UI/Common/WidgetToastMessage.h"
 #include "Blueprint/UserWidget.h"
@@ -19,11 +20,13 @@ FString UAssslashGameInstance::GetAuthToken()
 void UAssslashGameInstance::Init()
 {
 	Super::Init();
+	UE_LOG(LogAssslash, Log, TEXT("[GAMEINSTANCE] Init..!"));
 }
 
 void UAssslashGameInstance::OnStart()
 {
 	Super::OnStart();
+	UE_LOG(LogAssslash, Log, TEXT("[GAMEINSTANCE] OnStart"))
 }
 
 void UAssslashGameInstance::OnWorldChanged(UWorld* OldWorld, UWorld* NewWorld)
@@ -85,9 +88,45 @@ void UAssslashGameInstance::ShowConfirm(const FText Title, const FText Content, 
 
 void UAssslashGameInstance::OpenLevel(const FName& LevelName, bool bAbsolute)
 {
+	if (!UI_Transition || UI_Transition->IsValidLowLevel() == false)
+	{
+		UE_LOG(LogAssslash, Log, TEXT("[GAMEINSTANCE] OpenLevel :: Add UI_Transition"));
+		APlayerController* PC = GetFirstLocalPlayerController();
+		UI_Transition = CreateWidget<UWidgetCommonTransition>(PC,UI_TransitionClass);
+		UI_Transition->AddToViewport();
+	}
+	if (UI_Transition && UI_Transition->IsValidLowLevel())
+	{
+		UE_LOG(LogAssslash, Log, TEXT("[GAMEINSTANCE] UI_Transition Added to viewport"));
+		UI_Transition->Show();
+	}
+	if (BGMComponent->IsValidLowLevel())
+	{
+		if (BGMComponent->IsPlaying())
+		{
+			BGMComponent->FadeOut(0.3f, 0.0f, EAudioFaderCurve::Linear);
+		}
+	}
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+		TimerHandle,
+		[this, LevelName]()
+		{
+			this->TravelLevel(LevelName);
+		},
+		1.0f,
+		false
+	);
+}
+
+void UAssslashGameInstance::TravelLevel(const FName& LevelName)
+{
 	APlayerController* PC = GetFirstLocalPlayerController();
 	check(PC);
-	PC->ClientTravel(LevelName.ToString(), TRAVEL_Absolute,true);
+	PC->ClientTravel(
+				LevelName.ToString(),
+				TRAVEL_Absolute,
+				true);
 }
 
 void UAssslashGameInstance::PlayBGM(USoundBase* NewBGM)

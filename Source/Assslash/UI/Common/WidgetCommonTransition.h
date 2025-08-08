@@ -14,6 +14,7 @@ class ASSSLASH_API UWidgetCommonTransition : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidgetAnim), Transient)
 	class UWidgetAnimation* SlideIn;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(BindWidgetAnim), Transient)
@@ -21,7 +22,6 @@ class ASSSLASH_API UWidgetCommonTransition : public UUserWidget
 
 	UFUNCTION(BlueprintCallable)
 	void Show();
-
 	UFUNCTION(BlueprintCallable)
 	void Hide();
 };

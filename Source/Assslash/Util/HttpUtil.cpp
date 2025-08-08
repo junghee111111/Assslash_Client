@@ -40,8 +40,6 @@ void UHttpUtil::SetupRequestHeaders(
 		*Verb, *FullUrl
 		);
 	}
-
-	
 }
 
 FString UHttpUtil::JsonToString(const TSharedPtr<FJsonObject>& Json)

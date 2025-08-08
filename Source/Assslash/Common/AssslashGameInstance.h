@@ -33,7 +33,7 @@ private:
 	UPROPERTY()
 	class UUserWidget* UI_Loading = nullptr;
 	UPROPERTY()
-	class UUserWidget* UI_Transition = nullptr;
+	class UWidgetCommonTransition* UI_Transition = nullptr;
 	UPROPERTY()
 	class UWidgetConfirm* UI_Confirm = nullptr;
 
@@ -57,7 +57,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Common UI")
 	TSubclassOf<class UWidgetConfirm> UI_ConfirmClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Common UI")
-	TSubclassOf<class UUserWidget> UI_TransitionClass;
+	TSubclassOf<class UWidgetCommonTransition> UI_TransitionClass;
 	
 	UFUNCTION(BlueprintCallable, Category="Common UI")
 	void ShowLoading(bool Show);
@@ -70,6 +70,7 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="Level")
     void OpenLevel(const FName& LevelName, bool bAbsolute = false);
+	void TravelLevel(const FName& LevelName);
 
 	UFUNCTION(BlueprintCallable, Category="Audio")
 	void PlayBGM(USoundBase* NewBGM);

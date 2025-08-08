@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HttpFwd.h"
 #include "Blueprint/UserWidget.h"
 #include "WidgetOnlinePlayLobby.generated.h"
 
@@ -16,9 +17,14 @@ class ASSSLASH_API UWidgetOnlinePlayLobby : public UUserWidget
 
 	virtual void NativeConstruct() override;
 
+	UFUNCTION()
 	void OnButtonBackClicked();
+	UFUNCTION()
 	void OnButtonMatchRandomClicked();
+	UFUNCTION()
 	void OnButtonMatchInviteClicked();
+
+	void OnFetchUserInfoResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	bool bIsReject = false;
 
