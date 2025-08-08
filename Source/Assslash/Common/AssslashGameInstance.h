@@ -30,10 +30,10 @@ private:
 	
 	UPROPERTY()
 	class UWidgetToastMessage* UI_ToastMessage = nullptr;
-
 	UPROPERTY()
 	class UUserWidget* UI_Loading = nullptr;
-
+	UPROPERTY()
+	class UUserWidget* UI_Transition = nullptr;
 	UPROPERTY()
 	class UWidgetConfirm* UI_Confirm = nullptr;
 
@@ -52,12 +52,12 @@ public:
 	// ========== Widgets =========
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Common UI")
 	TSubclassOf<class UWidgetToastMessage> UI_ToastMessageClass;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Common UI")
 	TSubclassOf<class UUserWidget> UI_LoadingClass;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Common UI")
 	TSubclassOf<class UWidgetConfirm> UI_ConfirmClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Common UI")
+	TSubclassOf<class UUserWidget> UI_TransitionClass;
 	
 	UFUNCTION(BlueprintCallable, Category="Common UI")
 	void ShowLoading(bool Show);
